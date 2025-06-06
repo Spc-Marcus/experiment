@@ -1,9 +1,14 @@
 #!/bin/bash
+#SBATCH --job-name=strainminer
+#SBATCH --output=res.txt
+#SBATCH --ntasks=1
+#SBATCH --mem=10G
+. /local/env/envconda.sh
+conda activate strainminer
+. /local/env/envsamtools-1.15.sh
 # filepath: /udd/mfoin/Dev/experiment/index_bam_files.sh
-
 # Script to index BAM files that don't have corresponding .bai index files
-# Usage: ./index_bam_files.sh (run from project root)
-
+# Usage: ./index_bam_files.sh
 echo "Checking BAM files in: bam/"
 
 # Check if bam directory exists
