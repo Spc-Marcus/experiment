@@ -1,0 +1,10 @@
+Clustering Steps Summary
+Total steps: 1
+Total reads: 66
+==================================================
+
+Step 1:
+  Columns used: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+  Group 1 reads (25): read_67, read_100, read_107, read_143, read_155, read_167, read_177, read_182, read_189, read_199 ... and 15 more
+  Group 0 reads (41): read_47, read_110, read_112, read_142, read_146, read_150, read_162, read_164, read_166, read_172 ... and 31 more
+
