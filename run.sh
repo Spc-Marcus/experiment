@@ -2,15 +2,15 @@
 # filepath: /udd/mfoin/Dev/experiment/index_bam_files.sh
 
 # Script to index BAM files that don't have corresponding .bai index files
-# Usage: ./index_bam_files.sh
+# Usage: ./index_bam_files.sh (run from project root)
 
-# Change to the bam directory
-cd "$(dirname "$0")/bam" || {
-    echo "Error: Could not change to bam directory"
+echo "Checking BAM files in: bam/"
+
+# Check if bam directory exists
+if [ ! -d "bam" ]; then
+    echo "Error: BAM directory 'bam' not found in current directory"
     exit 1
-}
-
-echo "Checking BAM files in: $(pwd)"
+fi
 
 # Initialize counters
 indexed_count=0
@@ -18,28 +18,31 @@ skipped_count=0
 error_count=0
 
 # Process all BAM files
-for bam_file in *.bam; do
+for bam_file in bam/*.bam; do
     # Check if any BAM files exist
-    if [ "$bam_file" = "*.bam" ]; then
-        echo "No BAM files found in $(pwd)"
+    if [ ! -e "$bam_file" ]; then
+        echo "No BAM files found in bam/"
         exit 0
     fi
+    
+    # Get just the filename for display
+    bam_filename=$(basename "$bam_file")
     
     # Check if corresponding .bai file exists
     bai_file="${bam_file}.bai"
     
     if [ -f "$bai_file" ]; then
-        echo "✓ $bam_file already indexed (${bai_file} exists)"
+        echo "✓ $bam_filename already indexed ($(basename "$bai_file") exists)"
         ((skipped_count++))
     else
-        echo "⏳ Indexing $bam_file..."
+        echo "⏳ Indexing $bam_filename..."
         
         # Run samtools index
         if samtools index "$bam_file"; then
-            echo "✅ Successfully indexed $bam_file"
+            echo "✅ Successfully indexed $bam_filename"
             ((indexed_count++))
         else
-            echo "❌ Failed to index $bam_file"
+            echo "❌ Failed to index $bam_filename"
             ((error_count++))
         fi
     fi
@@ -54,12 +57,6 @@ echo "Errors: $error_count"
 
 if [ $error_count -eq 0 ]; then
     echo "✅ All BAM files are now indexed!"
-    cd ..
-    # Change back to parent directory for Python script
-    cd "$(dirname "$0")" || {
-        echo "Error: Could not change to parent directory"
-        exit 1
-    }
     
     echo ""
     echo "=== Running Matrix Generation ==="
@@ -74,14 +71,18 @@ if [ $error_count -eq 0 ]; then
         echo "⏳ Running ilphaplo analysis..."
         
         # Run ilphaplo batch script
-        if cd ilphaplo && bash run_batch.sh; then
-            echo "✅ ilphaplo analysis completed successfully!"
-            echo ""
-            echo "🎉 All processing steps completed successfully!"
-            exit 0
+        if [ -d "ilphaplo" ] && [ -f "ilphaplo/run_batch.sh" ]; then
+            if bash ilphaplo/run_batch.sh; then
+                echo "✅ ilphaplo analysis completed successfully!"
+                echo ""
+                echo "🎉 All processing steps completed successfully!"
+                exit 0
+            else
+                echo "❌ ilphaplo analysis failed"
+                exit 1
+            fi
         else
-            echo "❌ ilphaplo analysis failed"
-            echo "Check if ilphaplo directory exists and contains run_batch.sh"
+            echo "❌ ilphaplo directory or run_batch.sh not found"
             exit 1
         fi
     else
