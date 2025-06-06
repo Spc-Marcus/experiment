@@ -166,7 +166,10 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
         # Check if BAM file is indexed
         bai_file = Path(str(bam_file) + ".bai")
         if not bai_file.exists():
-            print(f"Warning: Index file {bai_file.name} not found. Attempting to process anyway...")
+            print(f"Error: Index file {bai_file.name} not found.")
+            print(f"Please create index with: samtools index {bam_file}")
+            failed += 1
+            continue
         
         try:
             success = process_single_bam(
