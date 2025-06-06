@@ -8,8 +8,6 @@ import time
 import contextlib
 from io import StringIO
 from pathlib import Path
-import json
-from datetime import datetime
 
 # Fix decorator imports with multiple fallback attempts
 try:
@@ -84,84 +82,6 @@ def suppress_gurobi_output():
         sys.stdout = old_stdout
         sys.stderr = old_stderr
 
-def save_clustering_steps(steps, filename, haplotype_count, output_base_dir="results"):
-    """
-    Sauvegarde les steps de clustering dans des fichiers texte organisés par haplotype.
-    
-    Parameters
-    ----------
-    steps : List[Tuple[List[int], List[int], List[int]]]
-        Les steps de clustering à sauvegarder
-    filename : str
-        Nom du fichier CSV d'origine
-    haplotype_count : int
-        Nombre d'haplotypes
-    output_base_dir : str
-        Répertoire de base pour la sauvegarde
-    """
-    # Créer la structure de répertoires
-    output_dir = Path(output_base_dir) / str(haplotype_count)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Nom du fichier de sortie basé sur le fichier d'entrée
-    base_name = Path(filename).stem
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = output_dir / f"{base_name}_steps_{timestamp}.txt"
-    
-    # Sauvegarder les informations détaillées
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(f"=== CLUSTERING STEPS POUR {filename} ===\n")
-        f.write(f"Nombre d'haplotypes: {haplotype_count}\n")
-        f.write(f"Timestamp: {datetime.now().isoformat()}\n")
-        f.write(f"Nombre total de steps: {len(steps)}\n")
-        f.write("\n" + "="*60 + "\n\n")
-        
-        if len(steps) == 0:
-            f.write("AUCUN STEP DE CLUSTERING TROUVÉ\n")
-            f.write("Cela peut indiquer:\n")
-            f.write("- La matrice était déjà bien structurée\n")
-            f.write("- L'algorithme a résolu sans optimisation ILP\n")
-            f.write("- Pas de patterns complexes détectés\n")
-        else:
-            for i, (reads1, reads0, cols) in enumerate(steps, 1):
-                f.write(f"STEP {i}:\n")
-                f.write(f"  Groupe positif (reads1): {len(reads1)} éléments\n")
-                f.write(f"    Indices: {sorted(reads1) if reads1 else 'vide'}\n")
-                f.write(f"  Groupe négatif (reads0): {len(reads0)} éléments\n") 
-                f.write(f"    Indices: {sorted(reads0) if reads0 else 'vide'}\n")
-                f.write(f"  Colonnes concernées: {len(cols)} éléments\n")
-                f.write(f"    Indices: {sorted(cols) if cols else 'vide'}\n")
-                f.write(f"  Ratio: {len(reads1)}:{len(reads0)} (positif:négatif)\n")
-                f.write("\n" + "-"*40 + "\n\n")
-    
-    # Aussi sauvegarder en JSON pour analyse programmatique
-    json_file = output_dir / f"{base_name}_steps_{timestamp}.json"
-    with open(json_file, 'w', encoding='utf-8') as f:
-        data = {
-            'filename': filename,
-            'haplotype_count': haplotype_count,
-            'timestamp': datetime.now().isoformat(),
-            'total_steps': len(steps),
-            'steps': [
-                {
-                    'step_number': i,
-                    'reads1': reads1,
-                    'reads0': reads0, 
-                    'columns': cols,
-                    'reads1_count': len(reads1),
-                    'reads0_count': len(reads0),
-                    'columns_count': len(cols)
-                }
-                for i, (reads1, reads0, cols) in enumerate(steps, 1)
-            ]
-        }
-        json.dump(data, f, indent=2)
-    
-    logger.info(f"Steps sauvegardés dans: {output_file}")
-    logger.info(f"JSON sauvegardé dans: {json_file}")
-    
-    return output_file, json_file
-
 @print_decorator('clustering')
 @track_clustering()
 @timed_matrix_operation('full_clustering')
@@ -203,6 +123,10 @@ def clustering_full_matrix(
     error_rate : float, optional
         Tolerance level for pattern detection, allowing for noise and imperfections
         in the binary patterns. Default is 0.025 (2.5%).
+    filename : str, optional
+        Original filename for logging purposes (unused in processing).
+    haplotype_count : int, optional
+        Number of haplotypes for organization (unused in processing).
     
     Returns
     -------
@@ -300,12 +224,6 @@ def clustering_full_matrix(
     # Filter and return only valid steps with non-empty groups and sufficient columns
     valid_steps = [step for step in steps_result if len(step[0]) > 0 and len(step[1]) > 0 and len(step[2]) >= min_col_quality]
     logger.info(f"Found {len(valid_steps)} valid clustering steps")  # GARDER CE LOG
-    
-    # NOUVEAU: Sauvegarder les steps dans des fichiers texte
-    try:
-        save_clustering_steps(valid_steps, filename, haplotype_count)
-    except Exception as e:
-        logger.warning(f"Erreur lors de la sauvegarde des steps: {e}")
     
     return valid_steps
 
