@@ -1,0 +1,190 @@
+Clustering Steps Summary
+Total steps: 37
+Total reads: 42
+==================================================
+
+Step 1:
+  Columns used: [0, 26, 91, 132, 225, 260, 289, 319, 341, 361]
+  Group 1 reads (1): b8994762-5323-c146-8fff-13b48703c3f8
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 2:
+  Columns used: [1, 3, 12, 21, 22, 34, 36, 55, 89, 131, 151, 272, 282, 308, 339, 347, 355, 357, 362, 387]
+  Group 1 reads (1): a47ea164-87f0-07c7-a294-aa0d0f25811d
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 3:
+  Columns used: [4, 118, 264, 292]
+  Group 1 reads (1): 3cdb6b13-9a0b-b502-c78d-b7027d2121e7
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 4:
+  Columns used: [5, 42, 87, 88, 120, 152, 162, 210, 212, 249, 298, 323, 389]
+  Group 1 reads (1): 32ec8853-92f8-8a20-b379-ff6806435c7b
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 5:
+  Columns used: [7, 127, 269]
+  Group 1 reads (1): 8beeecc0-b504-adba-c9d7-168820f65127
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 6:
+  Columns used: [9, 79, 116, 237, 359]
+  Group 1 reads (1): 73abee6c-2a78-3142-6da6-fa05f53df643
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 7:
+  Columns used: [14, 108, 117, 119, 245, 259]
+  Group 1 reads (1): 192a52a0-23e7-6651-9c03-148707434915
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 8:
+  Columns used: [15, 64, 70, 209, 223]
+  Group 1 reads (1): a35dcd4a-38fb-1879-d100-74919144f5ad
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 9:
+  Columns used: [27, 29, 32, 211]
+  Group 1 reads (1): 215908f6-c093-5d1c-5f04-1b8a4ee94828
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 10:
+  Columns used: [33, 35, 74, 92, 110, 128, 224, 231, 286, 313]
+  Group 1 reads (1): cd0112ac-a875-9332-80c9-1bee03bfd4f8
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 11:
+  Columns used: [38, 96, 200, 201, 250, 268, 368]
+  Group 1 reads (1): a7bc2521-77a4-cdcd-f2b6-0431439e55e8
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 12:
+  Columns used: [43, 98, 196, 235, 265, 366]
+  Group 1 reads (1): 25dc3aba-3793-c4d1-5c63-7893eb071434
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 13:
+  Columns used: [46, 68, 111, 114, 221, 252, 344, 388]
+  Group 1 reads (1): fa1e6d34-cfa4-1370-4344-55de9dd0c4ae
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 14:
+  Columns used: [49, 93, 243, 324, 327, 367]
+  Group 1 reads (1): ff15a0d7-5572-268a-1aef-e06ef310bb43
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 15:
+  Columns used: [51, 67, 81, 158, 188, 229]
+  Group 1 reads (1): 14dbb4fc-38c8-5f6f-d9b3-82701ba947e7
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 16:
+  Columns used: [52, 58, 164, 166, 191, 195, 236, 278, 281]
+  Group 1 reads (1): d82ba766-b8cc-26a3-66e6-ec38a4525a65
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 17:
+  Columns used: [54, 86, 138, 143, 230, 393]
+  Group 1 reads (1): 41578946-e663-2d72-044f-ef5260512d9b
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 18:
+  Columns used: [56, 73, 185, 275, 285, 316, 336, 342, 385]
+  Group 1 reads (1): 8aeaf311-5ac7-58ce-138c-5a303816d5fe
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 19:
+  Columns used: [59, 228, 334]
+  Group 1 reads (1): 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 20:
+  Columns used: [60, 133, 136]
+  Group 1 reads (1): c8eccfb6-f4f8-2f65-d9b0-ad2f69a3698b
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 21:
+  Columns used: [65, 203, 240]
+  Group 1 reads (2): 32ec8853-92f8-8a20-b379-ff6806435c7b, 30972d00-b141-9559-5984-9a75265cf6a3
+  Group 0 reads (40): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 30 more
+
+Step 22:
+  Columns used: [69, 90, 370]
+  Group 1 reads (1): 0a7bcdb8-2cc3-c47f-5648-c3c9736726be
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 23:
+  Columns used: [72, 130, 296, 301, 303, 320]
+  Group 1 reads (2): cd0112ac-a875-9332-80c9-1bee03bfd4f8, 8aeaf311-5ac7-58ce-138c-5a303816d5fe
+  Group 0 reads (40): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 30 more
+
+Step 24:
+  Columns used: [76, 103, 140, 187, 340, 394]
+  Group 1 reads (2): 11bd2115-d809-8514-9b84-c63dbd543764, d82ba766-b8cc-26a3-66e6-ec38a4525a65
+  Group 0 reads (40): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 30 more
+
+Step 25:
+  Columns used: [78, 113, 179]
+  Group 1 reads (1): fef0e840-6454-bd2b-a8cd-7243e5857d51
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 26:
+  Columns used: [80, 267, 295, 332, 369, 390]
+  Group 1 reads (1): 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 27:
+  Columns used: [97, 146, 149, 165, 193, 206, 290]
+  Group 1 reads (1): 11bd2115-d809-8514-9b84-c63dbd543764
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 28:
+  Columns used: [104, 129, 293, 337]
+  Group 1 reads (1): 28b6a907-08f8-0cba-7af9-6d5a530852d8
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 29:
+  Columns used: [126, 177, 364, 365, 396]
+  Group 1 reads (1): 944b0a67-9265-650c-d567-42c16afeecce
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 30:
+  Columns used: [142, 184, 263, 302, 314, 377, 383]
+  Group 1 reads (1): 0487dc34-cc78-ce21-8fa3-d5db4b943898
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7, 192a52a0-23e7-6651-9c03-148707434915 ... and 31 more
+
+Step 31:
+  Columns used: [145, 218, 238]
+  Group 1 reads (2): d82ba766-b8cc-26a3-66e6-ec38a4525a65, 8aeaf311-5ac7-58ce-138c-5a303816d5fe
+  Group 0 reads (40): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 30 more
+
+Step 32:
+  Columns used: [148, 153, 160, 163, 174, 175, 181, 186, 299]
+  Group 1 reads (2): d82ba766-b8cc-26a3-66e6-ec38a4525a65, 29f1bd01-39da-7731-397e-aea1bbcfa1ff
+  Group 0 reads (40): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 30 more
+
+Step 33:
+  Columns used: [156, 326, 392]
+  Group 1 reads (1): d9b9bf0a-af04-3e48-5c42-a12d463022ee
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 34:
+  Columns used: [161, 176, 182, 183, 189, 270, 271, 297, 311, 378]
+  Group 1 reads (3): 11bd2115-d809-8514-9b84-c63dbd543764, d82ba766-b8cc-26a3-66e6-ec38a4525a65, 29f1bd01-39da-7731-397e-aea1bbcfa1ff
+  Group 0 reads (39): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 29 more
+
+Step 35:
+  Columns used: [213, 246, 318]
+  Group 1 reads (1): 2c3694e5-b6bd-1361-b72b-a82184c24b2c
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 36:
+  Columns used: [214, 215, 284, 343, 386]
+  Group 1 reads (1): 3e3b0c0d-b92a-5b38-1068-37cbda5556b1
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+
+Step 37:
+  Columns used: [277, 310, 321, 371]
+  Group 1 reads (1): 29f1bd01-39da-7731-397e-aea1bbcfa1ff
+  Group 0 reads (41): 2bec1e4e-9dfe-265a-6d00-775499a84321, 7e9fc4b2-f3f8-c5d6-4e9c-760bb7dba699, 0a7bcdb8-2cc3-c47f-5648-c3c9736726be, 14ca3cdd-e9fb-5f96-ff4a-298fc3de662a, fa1e6d34-cfa4-1370-4344-55de9dd0c4ae, 42e2f7ff-03c5-f305-cb1a-73fca8a6d04c, b8994762-5323-c146-8fff-13b48703c3f8, a35dcd4a-38fb-1879-d100-74919144f5ad, 0487dc34-cc78-ce21-8fa3-d5db4b943898, 3cdb6b13-9a0b-b502-c78d-b7027d2121e7 ... and 31 more
+

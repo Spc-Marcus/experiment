@@ -1,0 +1,216 @@
+=== CLUSTERING STEPS POUR matrix_edge_7_104503_109503.csv ===
+Nombre d'haplotypes: 2
+Timestamp: 2025-06-06T15:36:56.077829
+Nombre total de steps: 19
+
+============================================================
+
+STEP 1:
+  Groupe positif (reads1): 1 éléments
+    Indices: [12]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [0, 7, 75]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 2:
+  Groupe positif (reads1): 1 éléments
+    Indices: [17]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 5 éléments
+    Indices: [1, 94, 142, 146, 151]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 3:
+  Groupe positif (reads1): 1 éléments
+    Indices: [21]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [2, 41, 71, 89]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 4:
+  Groupe positif (reads1): 1 éléments
+    Indices: [40]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [4, 47, 50, 66]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 5:
+  Groupe positif (reads1): 1 éléments
+    Indices: [42]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [6, 24, 72, 214]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 6:
+  Groupe positif (reads1): 1 éléments
+    Indices: [27]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [9, 189, 195, 196]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 7:
+  Groupe positif (reads1): 1 éléments
+    Indices: [33]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [10, 26, 54]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 8:
+  Groupe positif (reads1): 1 éléments
+    Indices: [46]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 6 éléments
+    Indices: [13, 46, 61, 96, 98, 109]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 9:
+  Groupe positif (reads1): 1 éléments
+    Indices: [41]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [14, 144, 199, 209]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 10:
+  Groupe positif (reads1): 1 éléments
+    Indices: [25]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [16, 30, 86, 163]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 11:
+  Groupe positif (reads1): 1 éléments
+    Indices: [38]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [18, 127, 187]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 12:
+  Groupe positif (reads1): 1 éléments
+    Indices: [3]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [23, 36, 184]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 13:
+  Groupe positif (reads1): 1 éléments
+    Indices: [44]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [25, 38, 39, 147]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 14:
+  Groupe positif (reads1): 1 éléments
+    Indices: [28]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [35, 103, 114]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 15:
+  Groupe positif (reads1): 1 éléments
+    Indices: [51]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52]
+  Colonnes concernées: 4 éléments
+    Indices: [59, 88, 119, 158]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 16:
+  Groupe positif (reads1): 1 éléments
+    Indices: [36]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [80, 170, 192]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 17:
+  Groupe positif (reads1): 1 éléments
+    Indices: [15]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [101, 122, 155]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 18:
+  Groupe positif (reads1): 1 éléments
+    Indices: [2]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [102, 105, 182]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+
+STEP 19:
+  Groupe positif (reads1): 1 éléments
+    Indices: [29]
+  Groupe négatif (reads0): 52 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+  Colonnes concernées: 3 éléments
+    Indices: [118, 150, 194]
+  Ratio: 1:52 (positif:négatif)
+
+----------------------------------------
+

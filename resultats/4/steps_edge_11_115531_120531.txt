@@ -1,0 +1,20 @@
+Clustering Steps Summary
+Total steps: 3
+Total reads: 60
+==================================================
+
+Step 1:
+  Columns used: [1, 18, 27]
+  Group 1 reads (1): b712ec1c-01da-974d-e27b-95200e237959
+  Group 0 reads (59): aaa6619d-c834-3a84-f401-8489ea94d650, 434cbf50-850b-e1fb-d045-20e65eb4a277, 6ce5df70-8335-3314-e940-975cac4e1a49, 3465462e-a2ac-5727-6a76-64ee94d506d2, faea16c3-4407-2831-8e36-e580ddf2fe9e, c913b543-89c9-e396-f9de-212b7873f43f, 557c1658-447c-4904-4f41-ce7533102f34, 1e1da3ce-f6f6-99e4-906a-d6f92ef68349, 722a960c-365f-e6f6-f6e5-f1050d15bf91, d3e09c85-27f3-bf0c-6c36-9559c3d07697 ... and 49 more
+
+Step 2:
+  Columns used: [8, 19, 22, 39]
+  Group 1 reads (1): 582c6eeb-40e1-b2aa-5ce1-acbcc651d805
+  Group 0 reads (59): aaa6619d-c834-3a84-f401-8489ea94d650, 434cbf50-850b-e1fb-d045-20e65eb4a277, 6ce5df70-8335-3314-e940-975cac4e1a49, 3465462e-a2ac-5727-6a76-64ee94d506d2, faea16c3-4407-2831-8e36-e580ddf2fe9e, c913b543-89c9-e396-f9de-212b7873f43f, 557c1658-447c-4904-4f41-ce7533102f34, 1e1da3ce-f6f6-99e4-906a-d6f92ef68349, 722a960c-365f-e6f6-f6e5-f1050d15bf91, d3e09c85-27f3-bf0c-6c36-9559c3d07697 ... and 49 more
+
+Step 3:
+  Columns used: [13, 16, 21, 25, 45]
+  Group 1 reads (1): 3465462e-a2ac-5727-6a76-64ee94d506d2
+  Group 0 reads (59): aaa6619d-c834-3a84-f401-8489ea94d650, 434cbf50-850b-e1fb-d045-20e65eb4a277, 6ce5df70-8335-3314-e940-975cac4e1a49, faea16c3-4407-2831-8e36-e580ddf2fe9e, c913b543-89c9-e396-f9de-212b7873f43f, 557c1658-447c-4904-4f41-ce7533102f34, 1e1da3ce-f6f6-99e4-906a-d6f92ef68349, 722a960c-365f-e6f6-f6e5-f1050d15bf91, d3e09c85-27f3-bf0c-6c36-9559c3d07697, 3947be1a-40bf-a83d-a20c-d76a477ccdf3 ... and 49 more
+

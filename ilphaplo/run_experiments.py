@@ -1,0 +1,302 @@
+import os
+import sys
+import pandas as pd
+import numpy as np
+import time
+import re
+from pathlib import Path
+from typing import Dict, List, Any
+
+# Fix import paths when running as main script
+if __name__ == "__main__":
+    # Add parent directory to Python path
+    current_dir = Path(__file__).parent
+    parent_dir = current_dir.parent
+    sys.path.insert(0, str(parent_dir))
+    
+    # Now import with absolute paths
+    from ilphaplo.get_data import get_data
+    from ilphaplo.pipeline import run_pipeline
+else:
+    # Relative imports for when imported as module
+    from .get_data import get_data
+    from .pipeline import run_pipeline
+
+def extract_haplotype_count(filepath: str) -> int:
+    """Extract haplotype count from file path like matrice/X/filename.csv"""
+    parts = Path(filepath).parts
+    for part in parts:
+        if part.isdigit():
+            hap_count = int(part)
+            # Support haplotypes from 2 to 10
+            if 2 <= hap_count <= 10:
+                return hap_count
+    
+    # Try to extract from filename if not found in path
+    filename = Path(filepath).name
+    import re
+    # Look for patterns like "matrix_2_1.csv" or "hap2_matrix.csv" etc.
+    patterns = [
+        r'(?:matrix|hap|hapl)_?(\d+)',
+        r'(\d+)_?(?:hap|hapl)',
+        r'(\d+)haplotype',
+        r'h(\d+)',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, filename.lower())
+        if match:
+            hap_count = int(match.group(1))
+            if 2 <= hap_count <= 10:
+                return hap_count
+    
+    return 0
+
+def find_matrice_directory(start_path: str = ".") -> Path:
+    """Find the matrice directory by searching up the directory tree."""
+    current = Path(start_path).resolve()
+    
+    # Look in current directory and parent directories
+    for path in [current] + list(current.parents):
+        # Check multiple possible directory names
+        for dir_name in ["matrice", "matrices", "data", "datasets", "matrix_data", "haplotype_data"]:
+            matrice_path = path / dir_name
+            if matrice_path.exists() and matrice_path.is_dir():
+                # Verify it contains numbered subdirectories
+                subdirs = [d for d in matrice_path.iterdir() if d.is_dir() and d.name.isdigit()]
+                if subdirs:
+                    print(f"Found matrix directory at: {matrice_path}")
+                    print(f"Contains haplotype subdirectories: {sorted([d.name for d in subdirs])}")
+                    return matrice_path
+    
+    # If not found, return None instead of creating
+    print("No existing matrix directory found.")
+    print("Please ensure your data is organized with numbered subdirectories:")
+    print("your_data_directory/")
+    print("├── 2/")
+    print("│   ├── matrix1.csv")
+    print("│   └── matrix2.csv")
+    print("├── 3/")
+    print("│   └── matrix3.csv")
+    print("├── 4/")
+    print("├── 5/")
+    print("├── 6/")
+    print("└── ...")
+    
+    return None
+
+def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
+    """
+    Process all CSV matrices and collect statistics.
+    
+    Parameters
+    ----------
+    base_dir : str, optional
+        Base directory containing matrix subdirectories. If None, will search for matrice directory.
+        
+    Returns
+    -------
+    List[Dict[str, Any]]
+        List of statistics for each processed matrix
+    """
+    
+    results = []
+    
+    # Find matrice directory
+    if base_dir is None:
+        base_path = find_matrice_directory()
+        if base_path is None:
+            print("Error: Could not find matrice directory with existing data")
+            return results
+    else:
+        base_path = Path(base_dir)
+        if not base_path.exists():
+            print(f"Specified directory {base_path} not found")
+            return results
+    
+    print(f"Using matrice directory: {base_path.resolve()}")
+    
+    # Find all CSV files in subdirectories
+    csv_files = list(base_path.rglob("*.csv"))
+    
+    print(f"Found {len(csv_files)} CSV files to process")
+    
+    if len(csv_files) == 0:
+        print("No CSV files found in matrice directory")
+        print("Please check that your data files are in the correct location:")
+        print(f"  {base_path.resolve()}")
+        return results
+    
+    for i, csv_file in enumerate(csv_files):
+        try:
+            print(f"Processing {i+1}/{len(csv_files)}: {csv_file}")
+            
+            # Extract haplotype count from directory structure
+            haplotype_count = extract_haplotype_count(str(csv_file))
+            
+            # Load and process matrix
+            start_time = time.time()
+            rows_data, cols_data, edges_0, edges_1, row_names, col_names, df, comp_df = get_data(str(csv_file))
+            load_time = time.time() - start_time
+            
+            # Convert to binary matrix (ensure 0/1 values)
+            binary_matrix = df.values.astype(int)
+            
+            # Run pipeline and collect statistics
+            # NOUVEAU: Passer le nom du fichier et le nombre d'haplotypes
+            pipeline_results = run_pipeline(
+                binary_matrix,
+                min_col_quality=3,
+                min_row_quality=5,
+                error_rate=0.025,
+                filename=csv_file.name,
+                haplotype_count=haplotype_count
+            )
+            
+            # Compile comprehensive statistics
+            stats = {
+                # File information
+                'filename': csv_file.name,
+                'filepath': str(csv_file.relative_to(base_path)),
+                'haplotype_count': haplotype_count,
+                'load_time': load_time,
+                
+                # Matrix characteristics
+                'matrix_rows': binary_matrix.shape[0],
+                'matrix_cols': binary_matrix.shape[1],
+                'matrix_size': binary_matrix.size,
+                'matrix_density': np.sum(binary_matrix) / binary_matrix.size,
+                'ones_count': int(np.sum(binary_matrix)),
+                'zeros_count': int(binary_matrix.size - np.sum(binary_matrix)),
+                
+                # Row statistics
+                'row_min_sum': int(np.min(np.sum(binary_matrix, axis=1))),
+                'row_max_sum': int(np.max(np.sum(binary_matrix, axis=1))),
+                'row_mean_sum': float(np.mean(np.sum(binary_matrix, axis=1))),
+                'row_std_sum': float(np.std(np.sum(binary_matrix, axis=1))),
+                
+                # Column statistics  
+                'col_min_sum': int(np.min(np.sum(binary_matrix, axis=0))),
+                'col_max_sum': int(np.max(np.sum(binary_matrix, axis=0))),
+                'col_mean_sum': float(np.mean(np.sum(binary_matrix, axis=0))),
+                'col_std_sum': float(np.std(np.sum(binary_matrix, axis=0))),
+                
+                # Pipeline performance
+                'ilp_calls_total': pipeline_results.get('ilp_calls_total', 0),
+                'preprocessing_time': pipeline_results.get('preprocessing_time', 0),
+                'clustering_time': pipeline_results.get('clustering_time', 0),
+                'total_time': pipeline_results.get('total_time', 0),
+                'ilp_time_total': pipeline_results.get('ilp_time_total', 0),
+                'ilp_time_ratio': pipeline_results.get('ilp_time_ratio', 0),
+                'avg_ilp_time': pipeline_results.get('avg_ilp_time', 0),
+                
+                # Results
+                'patterns_found': pipeline_results.get('patterns_found', 0),
+                'regions_found': pipeline_results.get('regions_found', 0),
+                'clustering_steps': pipeline_results.get('clustering_steps', 0),
+                'regions_processed': pipeline_results.get('regions_processed', 0),
+                'matrix_operations': pipeline_results.get('matrix_operations', 0),
+                
+                # Region characteristics
+                'avg_region_size': pipeline_results.get('avg_region_size', 0),
+                'largest_region': pipeline_results.get('largest_region', 0),
+                'smallest_region': pipeline_results.get('smallest_region', 0),
+                
+                # Efficiency metrics
+                'ilp_calls_per_pattern': pipeline_results.get('ilp_calls_total', 0) / max(1, pipeline_results.get('patterns_found', 1)),
+                'time_per_ilp_call': pipeline_results.get('ilp_time_total', 0) / max(1, pipeline_results.get('ilp_calls_total', 1)),
+                'patterns_per_second': pipeline_results.get('patterns_found', 0) / max(1, pipeline_results.get('total_time', 1)),
+                'matrix_complexity': binary_matrix.shape[0] * binary_matrix.shape[1] * pipeline_results.get('matrix_density', 0),
+            }
+            
+            # Add solver status counts if available
+            solver_stats = pipeline_results.get('solver_status_counts', {})
+            stats.update({
+                'solver_success_count': solver_stats.get('success', 0),
+                'solver_failed_count': solver_stats.get('failed', 0),
+                'solver_error_count': solver_stats.get('error', 0),
+            })
+            
+            results.append(stats)
+            print(f"  -> Completed: {stats['ilp_calls_total']} ILP calls, {stats['patterns_found']} patterns, {stats['total_time']:.3f}s")
+            
+        except Exception as e:
+            print(f"  -> Error processing {csv_file}: {str(e)}")
+            # Add error entry
+            error_stats = {
+                'filename': csv_file.name,
+                'filepath': str(csv_file.relative_to(base_path)),
+                'haplotype_count': extract_haplotype_count(str(csv_file)),
+                'error': str(e),
+                'matrix_rows': 0,
+                'matrix_cols': 0,
+                'ilp_calls_total': 0,
+                'total_time': 0,
+                'patterns_found': 0
+            }
+            results.append(error_stats)
+    
+    return results
+
+def save_results_to_csv(results: List[Dict[str, Any]], output_file: str = "experiment_results.csv"):
+    """Save experiment results to CSV file."""
+    
+    if not results:
+        print("No results to save")
+        return
+    
+    # Convert to DataFrame
+    df = pd.DataFrame(results)
+    
+    # Sort by haplotype count and matrix size
+    df = df.sort_values(['haplotype_count', 'matrix_size'], ascending=[True, True])
+    
+    # Save to CSV
+    df.to_csv(output_file, index=False)
+    print(f"Results saved to {output_file}")
+    
+    # Print summary statistics with correct interpretation
+    print("\n=== EXPERIMENT SUMMARY ===")
+    print(f"Total matrices processed: {len(df)}")
+    print(f"Efficient runs (no ILP needed): {len(df[df['ilp_calls_total'] == 0])}")
+    print(f"Complex runs (ILP required): {len(df[df['ilp_calls_total'] > 0])}")
+    print(f"Algorithm efficiency rate: {len(df[df['ilp_calls_total'] == 0]) / len(df) * 100:.1f}%")
+    
+    if len(df) > 0:
+        all_runs_df = df
+        print(f"\nHaplotype counts: {sorted(all_runs_df['haplotype_count'].unique())}")
+        print(f"Matrix sizes range: {all_runs_df['matrix_size'].min()} - {all_runs_df['matrix_size'].max()}")
+        print(f"Total ILP calls across all runs: {all_runs_df['ilp_calls_total'].sum()}")
+        print(f"Total processing time: {all_runs_df['total_time'].sum():.2f}s")
+        print(f"Average ILP calls per matrix: {all_runs_df['ilp_calls_total'].mean():.1f}")
+        print(f"Average patterns found per matrix: {all_runs_df['patterns_found'].mean():.1f}")
+        
+        # Group by haplotype count
+        print(f"\n=== BY HAPLOTYPE COUNT ===")
+        for hap_count in sorted(all_runs_df['haplotype_count'].unique()):
+            hap_df = all_runs_df[all_runs_df['haplotype_count'] == hap_count]
+            efficient_count = len(hap_df[hap_df['ilp_calls_total'] == 0])
+            efficiency_rate = efficient_count / len(hap_df) * 100
+            print(f"Haplotypes {hap_count}: {len(hap_df)} matrices, "
+                  f"avg ILP calls: {hap_df['ilp_calls_total'].mean():.1f}, "
+                  f"avg time: {hap_df['total_time'].mean():.2f}s, "
+                  f"efficiency: {efficiency_rate:.1f}%")
+
+def run_experiments():
+    """Main function to run all experiments."""
+    
+    print("Starting matrix processing experiments...")
+    print(f"Working directory: {os.getcwd()}")
+    
+    # Process all matrices - don't specify base_dir to trigger auto-discovery
+    results = process_all_matrices()
+    
+    # Save results
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    output_file = f"experiment_results_{timestamp}.csv"
+    save_results_to_csv(results, output_file)
+    
+    return results
+
+if __name__ == "__main__":
+    results = run_experiments()

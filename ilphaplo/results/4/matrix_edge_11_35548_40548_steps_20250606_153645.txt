@@ -1,0 +1,194 @@
+=== CLUSTERING STEPS POUR matrix_edge_11_35548_40548.csv ===
+Nombre d'haplotypes: 4
+Timestamp: 2025-06-06T15:36:45.541474
+Nombre total de steps: 17
+
+============================================================
+
+STEP 1:
+  Groupe positif (reads1): 1 éléments
+    Indices: [5]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 3, 4, 6, 7, 8, 9]
+  Colonnes concernées: 45 éléments
+    Indices: [0, 7, 27, 33, 41, 50, 55, 60, 61, 75, 101, 113, 125, 127, 131, 170, 176, 204, 205, 211, 223, 243, 244, 262, 321, 368, 380, 395, 405, 427, 468, 482, 506, 507, 508, 538, 539, 552, 558, 581, 582, 598, 599, 600, 647]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 2:
+  Groupe positif (reads1): 1 éléments
+    Indices: [6]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 7, 8, 9]
+  Colonnes concernées: 20 éléments
+    Indices: [1, 16, 17, 82, 85, 121, 132, 142, 143, 159, 253, 270, 356, 436, 514, 524, 561, 571, 578, 636]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 3:
+  Groupe positif (reads1): 1 éléments
+    Indices: [7]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 8, 9]
+  Colonnes concernées: 76 éléments
+    Indices: [12, 13, 15, 18, 31, 43, 45, 46, 48, 62, 65, 68, 74, 80, 81, 83, 84, 87, 88, 90, 96, 103, 106, 112, 119, 120, 137, 138, 139, 145, 152, 155, 160, 163, 180, 182, 216, 217, 226, 238, 239, 245, 246, 247, 289, 300, 301, 303, 308, 315, 322, 332, 350, 354, 361, 371, 396, 398, 399, 407, 422, 429, 433, 442, 447, 448, 455, 495, 497, 527, 530, 537, 549, 586, 610, 637]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 4:
+  Groupe positif (reads1): 1 éléments
+    Indices: [9]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  Colonnes concernées: 72 éléments
+    Indices: [233, 265, 275, 324, 326, 335, 341, 342, 359, 363, 400, 408, 411, 413, 414, 418, 425, 428, 432, 437, 443, 453, 458, 459, 461, 465, 469, 471, 477, 479, 480, 481, 485, 487, 488, 490, 498, 503, 510, 519, 526, 528, 529, 534, 535, 536, 542, 556, 557, 563, 564, 573, 583, 584, 585, 587, 593, 597, 603, 612, 613, 615, 617, 619, 624, 628, 630, 631, 634, 635, 642, 648]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 5:
+  Groupe positif (reads1): 1 éléments
+    Indices: [0]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  Colonnes concernées: 38 éléments
+    Indices: [2, 25, 54, 58, 89, 100, 147, 150, 171, 173, 178, 181, 191, 192, 206, 218, 266, 267, 282, 291, 318, 325, 327, 328, 348, 367, 374, 375, 416, 440, 441, 486, 532, 604, 607, 623, 627, 629]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 6:
+  Groupe positif (reads1): 1 éléments
+    Indices: [4]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 3, 5, 6, 7, 8, 9]
+  Colonnes concernées: 62 éléments
+    Indices: [3, 9, 22, 26, 29, 42, 67, 102, 105, 109, 110, 111, 128, 130, 133, 144, 154, 175, 197, 198, 200, 202, 212, 224, 228, 234, 268, 296, 298, 316, 323, 349, 360, 370, 378, 394, 434, 450, 451, 452, 460, 462, 463, 467, 475, 489, 517, 518, 521, 522, 548, 569, 589, 591, 595, 602, 605, 606, 632, 633, 644, 645]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 7:
+  Groupe positif (reads1): 1 éléments
+    Indices: [1]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 2, 3, 4, 5, 6, 7, 8, 9]
+  Colonnes concernées: 56 éléments
+    Indices: [10, 11, 21, 44, 73, 97, 115, 136, 140, 151, 158, 161, 184, 185, 186, 193, 194, 196, 199, 250, 272, 273, 287, 290, 293, 314, 320, 336, 337, 347, 351, 379, 381, 390, 391, 392, 409, 412, 419, 421, 438, 464, 484, 496, 499, 566, 568, 570, 572, 576, 592, 618, 620, 622, 640, 650]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 8:
+  Groupe positif (reads1): 2 éléments
+    Indices: [0, 7]
+  Groupe négatif (reads0): 8 éléments
+    Indices: [1, 2, 3, 4, 5, 6, 8, 9]
+  Colonnes concernées: 3 éléments
+    Indices: [38, 156, 609]
+  Ratio: 2:8 (positif:négatif)
+
+----------------------------------------
+
+STEP 9:
+  Groupe positif (reads1): 2 éléments
+    Indices: [0, 8]
+  Groupe négatif (reads0): 8 éléments
+    Indices: [1, 2, 3, 4, 5, 6, 7, 9]
+  Colonnes concernées: 6 éléments
+    Indices: [49, 164, 214, 232, 251, 651]
+  Ratio: 2:8 (positif:négatif)
+
+----------------------------------------
+
+STEP 10:
+  Groupe positif (reads1): 2 éléments
+    Indices: [0, 2]
+  Groupe négatif (reads0): 8 éléments
+    Indices: [1, 3, 4, 5, 6, 7, 8, 9]
+  Colonnes concernées: 3 éléments
+    Indices: [162, 208, 255]
+  Ratio: 2:8 (positif:négatif)
+
+----------------------------------------
+
+STEP 11:
+  Groupe positif (reads1): 1 éléments
+    Indices: [2]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 3, 4, 5, 6, 7, 8, 9]
+  Colonnes concernées: 32 éléments
+    Indices: [8, 34, 35, 36, 56, 79, 94, 95, 104, 117, 123, 141, 179, 225, 231, 264, 286, 294, 319, 340, 358, 362, 364, 369, 372, 382, 385, 446, 516, 543, 579, 611]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 12:
+  Groupe positif (reads1): 1 éléments
+    Indices: [3]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 4, 5, 6, 7, 8, 9]
+  Colonnes concernées: 27 éléments
+    Indices: [19, 32, 53, 57, 70, 93, 99, 108, 114, 165, 167, 168, 174, 190, 209, 215, 258, 263, 278, 279, 299, 302, 306, 365, 554, 565, 588]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 13:
+  Groupe positif (reads1): 2 éléments
+    Indices: [4, 8]
+  Groupe négatif (reads0): 8 éléments
+    Indices: [0, 1, 2, 3, 5, 6, 7, 9]
+  Colonnes concernées: 4 éléments
+    Indices: [28, 213, 259, 626]
+  Ratio: 2:8 (positif:négatif)
+
+----------------------------------------
+
+STEP 14:
+  Groupe positif (reads1): 1 éléments
+    Indices: [8]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 9]
+  Colonnes concernées: 64 éléments
+    Indices: [39, 40, 47, 51, 64, 66, 71, 91, 92, 146, 153, 157, 169, 203, 207, 219, 221, 222, 229, 261, 283, 307, 311, 313, 331, 334, 339, 353, 357, 383, 386, 388, 389, 402, 439, 444, 445, 449, 457, 466, 483, 500, 501, 502, 505, 525, 544, 545, 546, 553, 555, 562, 574, 575, 577, 590, 601, 608, 614, 621, 625, 639, 641, 646]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
+STEP 15:
+  Groupe positif (reads1): 2 éléments
+    Indices: [2, 8]
+  Groupe négatif (reads0): 8 éléments
+    Indices: [0, 1, 3, 4, 5, 6, 7, 9]
+  Colonnes concernées: 3 éléments
+    Indices: [177, 281, 373]
+  Ratio: 2:8 (positif:négatif)
+
+----------------------------------------
+
+STEP 16:
+  Groupe positif (reads1): 4 éléments
+    Indices: [3, 6, 7, 8]
+  Groupe négatif (reads0): 6 éléments
+    Indices: [0, 1, 2, 4, 5, 9]
+  Colonnes concernées: 3 éléments
+    Indices: [37, 118, 305]
+  Ratio: 4:6 (positif:négatif)
+
+----------------------------------------
+
+STEP 17:
+  Groupe positif (reads1): 1 éléments
+    Indices: [9]
+  Groupe négatif (reads0): 9 éléments
+    Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  Colonnes concernées: 54 éléments
+    Indices: [201, 210, 220, 230, 240, 241, 242, 248, 252, 256, 257, 260, 271, 274, 276, 277, 284, 309, 312, 330, 333, 343, 355, 376, 387, 393, 401, 403, 415, 420, 423, 424, 430, 435, 470, 476, 478, 491, 492, 493, 494, 509, 513, 520, 523, 533, 541, 551, 559, 560, 567, 594, 616, 638]
+  Ratio: 1:9 (positif:négatif)
+
+----------------------------------------
+
