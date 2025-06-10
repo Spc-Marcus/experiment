@@ -1,94 +1,42 @@
 #!/bin/bash
-# filepath: /udd/mfoin/Dev/experiment/index_bam_files.sh
+#SBATCH --job-name=strainminer
+#SBATCH --output=res.txt
+#SBATCH --ntasks=1
+#SBATCH --mem=10G
 
-# Script to index BAM files that don't have corresponding .bai index files
-# Usage: ./index_bam_files.sh
+. /local/env/envconda.sh
+conda activate strainminer
+. /local/env/envsamtools-1.15.sh
 
-# Change to the bam directory
-cd "$(dirname "$0")/bam" || {
-    echo "Error: Could not change to bam directory"
-    exit 1
-}
+echo "🚀 StrainMiner - Sequential Pipeline"
+echo "==================================="
 
-echo "Checking BAM files in: $(pwd)"
-
-# Initialize counters
-indexed_count=0
-skipped_count=0
-error_count=0
-
-# Process all BAM files
-for bam_file in *.bam; do
-    # Check if any BAM files exist
-    if [ "$bam_file" = "*.bam" ]; then
-        echo "No BAM files found in $(pwd)"
-        exit 0
-    fi
-    
-    # Check if corresponding .bai file exists
-    bai_file="${bam_file}.bai"
-    
-    if [ -f "$bai_file" ]; then
-        echo "✓ $bam_file already indexed (${bai_file} exists)"
-        ((skipped_count++))
-    else
-        echo "⏳ Indexing $bam_file..."
-        
-        # Run samtools index
-        if samtools index "$bam_file"; then
-            echo "✅ Successfully indexed $bam_file"
-            ((indexed_count++))
-        else
-            echo "❌ Failed to index $bam_file"
-            ((error_count++))
-        fi
-    fi
-done
-
-# Print summary
-echo ""
-echo "=== Indexing Summary ==="
-echo "Files indexed: $indexed_count"
-echo "Files skipped (already indexed): $skipped_count"
-echo "Errors: $error_count"
-
-if [ $error_count -eq 0 ]; then
-    echo "✅ All BAM files are now indexed!"
-    cd ..
-    # Change back to parent directory for Python script
-    cd "$(dirname "$0")" || {
-        echo "Error: Could not change to parent directory"
-        exit 1
-    }
-    
-    echo ""
-    echo "=== Running Matrix Generation ==="
-    echo "⏳ Processing BAM files to create CSV matrices..."
-    
-    # Run the Python script to process BAM files
-    if python create_csv/process_bam_folder.py bam .; then
-        echo "✅ Matrix generation completed successfully!"
-        
-        echo ""
-        echo "=== Running ilphaplo ==="
-        echo "⏳ Running ilphaplo analysis..."
-        
-        # Run ilphaplo batch script
-        if cd ilphaplo && bash run_batch.sh; then
-            echo "✅ ilphaplo analysis completed successfully!"
-            echo ""
-            echo "🎉 All processing steps completed successfully!"
-            exit 0
-        else
-            echo "❌ ilphaplo analysis failed"
-            echo "Check if ilphaplo directory exists and contains run_batch.sh"
-            exit 1
-        fi
-    else
-        echo "❌ Matrix generation failed"
-        exit 1
-    fi
+# Step 1: Create CSV
+echo "=== Step 1: Creating CSV Matrices ==="
+if python create_csv/process_bam_folder.py bam .; then
+    echo "✅ CSV creation completed successfully!"
 else
-    echo "⚠️  Some files failed to index. Check samtools installation and file permissions."
+    echo "❌ CSV creation failed"
     exit 1
 fi
+
+# Step 2: KNN
+echo "=== Step 2: KNN Imputation ==="
+if python Knn/impute_matrices.py matrices_no_binarize; then
+    echo "✅ KNN imputation completed successfully!"
+    echo "Matrices saved in: matrices/"
+else
+    echo "❌ KNN imputation failed"
+    exit 1
+fi
+
+# Step 3: ilphaplo analysis
+echo "=== Step 3: ilphaplo Analysis ==="
+if bash ilphaplo/run_batch.sh; then
+    echo "✅ ilphaplo analysis completed successfully!"
+else
+    echo "❌ ilphaplo analysis failed"
+    echo "Note: This may be normal if no suitable matrices were found"
+fi
+
+echo "🎉 Sequential pipeline finished!"

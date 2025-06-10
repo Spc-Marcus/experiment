@@ -22,25 +22,120 @@ else:
     from .get_data import get_data
     from .pipeline import run_pipeline
 
+def find_matrice_directory(start_path: str = ".") -> Path:
+    """Find the matrice directory by searching up the directory tree."""
+    current = Path(start_path).resolve()
+    
+    # Check if a specific path was provided as command line argument
+    if len(sys.argv) > 1:
+        provided_path = Path(sys.argv[1])
+        if provided_path.exists():
+            print(f"Using provided matrix directory: {provided_path}")
+            return provided_path
+    
+    # Look for KNN output directory with numbered subdirectories
+    possible_matrices_paths = [
+        current / "matrices",           # ./matrices
+        current / "../matrices",        # ../matrices  
+        current.parent / "matrices",    # parent/matrices
+        Path("matrices"),               # relative matrices
+        Path("../matrices"),            # relative ../matrices
+    ]
+    
+    for matrices_path in possible_matrices_paths:
+        if matrices_path.exists() and matrices_path.is_dir():
+            # Check for numbered subdirectories (haplotype structure)
+            numbered_subdirs = [d for d in matrices_path.iterdir() 
+                              if d.is_dir() and d.name.isdigit()]
+            
+            # Check for CSV files in numbered subdirectories
+            total_csv_files = 0
+            for subdir in numbered_subdirs:
+                csv_files_in_subdir = list(subdir.glob("*.csv"))
+                total_csv_files += len(csv_files_in_subdir)
+            
+            # Also check for direct CSV files
+            direct_csv_files = list(matrices_path.glob("*.csv"))
+            total_csv_files += len(direct_csv_files)
+            
+            if total_csv_files > 0:
+                print(f"Found KNN matrices directory at: {matrices_path}")
+                if numbered_subdirs:
+                    print(f"Contains numbered subdirectories: {sorted([d.name for d in numbered_subdirs])}")
+                    print(f"Total CSV files in subdirectories: {total_csv_files - len(direct_csv_files)}")
+                if direct_csv_files:
+                    print(f"Direct CSV files: {len(direct_csv_files)}")
+                print(f"Total CSV files: {total_csv_files}")
+                return matrices_path
+    
+    # Look in current directory and parent directories for organized data
+    for path in [current] + list(current.parents)[:2]:  # Don't go too far up
+        # Check multiple possible directory names
+        for dir_name in ["matrice", "matrices", "data", "datasets", "matrix_data", "haplotype_data"]:
+            matrice_path = path / dir_name
+            if matrice_path.exists() and matrice_path.is_dir():
+                # Check for CSV files directly or in numbered subdirectories
+                csv_files = list(matrice_path.glob("*.csv"))
+                subdirs = [d for d in matrice_path.iterdir() if d.is_dir() and d.name.isdigit()]
+                
+                if csv_files:
+                    print(f"Found matrix directory at: {matrice_path}")
+                    print(f"Contains {len(csv_files)} CSV files directly")
+                    return matrice_path
+                elif subdirs:
+                    # Check if subdirectories contain CSV files
+                    subdir_csv_count = sum(len(list(d.glob("*.csv"))) for d in subdirs)
+                    if subdir_csv_count > 0:
+                        print(f"Found matrix directory at: {matrice_path}")
+                        print(f"Contains haplotype subdirectories: {sorted([d.name for d in subdirs])}")
+                        print(f"Total CSV files in subdirectories: {subdir_csv_count}")
+                        return matrice_path
+    
+    # If not found, return None instead of creating
+    print("No existing matrix directory found.")
+    print("Searched in the following locations:")
+    for path in possible_matrices_paths:
+        print(f"  - {path}")
+    print("")
+    print("Please ensure your data is organized as:")
+    print("matrices/ (KNN output with haplotype structure)")
+    print("├── 2/")
+    print("│   ├── matrix1.csv")
+    print("│   └── matrix2.csv")
+    print("├── 3/")
+    print("│   └── matrix3.csv")
+    print("└── ...")
+    print("OR")
+    print("matrices/ (direct CSV files)")
+    print("├── matrix1.csv")
+    print("├── matrix2.csv")
+    print("└── ...")
+    
+    return None
+
 def extract_haplotype_count(filepath: str) -> int:
-    """Extract haplotype count from file path like matrice/X/filename.csv"""
+    """Extract haplotype count from file path or filename."""
     parts = Path(filepath).parts
+    
+    # First try to extract from directory structure (numbered directories)
     for part in parts:
         if part.isdigit():
             hap_count = int(part)
-            # Support haplotypes from 2 to 10
             if 2 <= hap_count <= 10:
                 return hap_count
     
-    # Try to extract from filename if not found in path
+    # Try to extract from filename
     filename = Path(filepath).name
     import re
-    # Look for patterns like "matrix_2_1.csv" or "hap2_matrix.csv" etc.
+    
+    # Look for various patterns in filename
     patterns = [
         r'(?:matrix|hap|hapl)_?(\d+)',
         r'(\d+)_?(?:hap|hapl)',
         r'(\d+)haplotype',
         r'h(\d+)',
+        r'_(\d+)_',  # Pattern like matrix_2_1.csv
+        r'^(\d+)_',  # Pattern like 2_matrix.csv
     ]
     
     for pattern in patterns:
@@ -50,54 +145,12 @@ def extract_haplotype_count(filepath: str) -> int:
             if 2 <= hap_count <= 10:
                 return hap_count
     
+    # Default to 0 if no haplotype count found (will be handled gracefully)
     return 0
-
-def find_matrice_directory(start_path: str = ".") -> Path:
-    """Find the matrice directory by searching up the directory tree."""
-    current = Path(start_path).resolve()
-    
-    # Look in current directory and parent directories
-    for path in [current] + list(current.parents):
-        # Check multiple possible directory names
-        for dir_name in ["matrice", "matrices", "data", "datasets", "matrix_data", "haplotype_data"]:
-            matrice_path = path / dir_name
-            if matrice_path.exists() and matrice_path.is_dir():
-                # Verify it contains numbered subdirectories
-                subdirs = [d for d in matrice_path.iterdir() if d.is_dir() and d.name.isdigit()]
-                if subdirs:
-                    print(f"Found matrix directory at: {matrice_path}")
-                    print(f"Contains haplotype subdirectories: {sorted([d.name for d in subdirs])}")
-                    return matrice_path
-    
-    # If not found, return None instead of creating
-    print("No existing matrix directory found.")
-    print("Please ensure your data is organized with numbered subdirectories:")
-    print("your_data_directory/")
-    print("├── 2/")
-    print("│   ├── matrix1.csv")
-    print("│   └── matrix2.csv")
-    print("├── 3/")
-    print("│   └── matrix3.csv")
-    print("├── 4/")
-    print("├── 5/")
-    print("├── 6/")
-    print("└── ...")
-    
-    return None
 
 def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
     """
     Process all CSV matrices and collect statistics.
-    
-    Parameters
-    ----------
-    base_dir : str, optional
-        Base directory containing matrix subdirectories. If None, will search for matrice directory.
-        
-    Returns
-    -------
-    List[Dict[str, Any]]
-        List of statistics for each processed matrix
     """
     
     results = []
@@ -116,7 +169,7 @@ def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
     
     print(f"Using matrice directory: {base_path.resolve()}")
     
-    # Find all CSV files in subdirectories
+    # Find all CSV files in directory and subdirectories
     csv_files = list(base_path.rglob("*.csv"))
     
     print(f"Found {len(csv_files)} CSV files to process")

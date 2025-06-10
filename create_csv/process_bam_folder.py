@@ -135,7 +135,7 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
     bam_folder : Path
         Directory containing BAM files
     output_folder : Path
-        Output directory (will create matrices/ subdirectory)
+        Output directory (will create matrices_no_binarize/ subdirectory)
     window_size : int
         Size of genomic windows to process
     overlap : int
@@ -153,7 +153,7 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
     print(f"Found {len(bam_files)} BAM files to process")
     
     # Create output directory structure
-    matrices_dir = output_folder / "matrices"
+    matrices_dir = output_folder / "matrices_no_binarize"
     matrices_dir.mkdir(parents=True, exist_ok=True)
     
     successful = 0
@@ -205,7 +205,7 @@ Examples:
         
 Output structure:
   output_folder/
-  └── matrices/
+  └── matrices_no_binarize/
       ├── sample1/
       │   ├── matrix_chr1_0.csv
       │   ├── matrix_chr1_100000.csv

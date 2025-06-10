@@ -245,8 +245,17 @@ def create_visualizations(df: pd.DataFrame, output_dir: str = "plots"):
     df['efficient'] = (df['ilp_calls_total'] == 0).astype(int)
     
     size_efficiency = df.groupby(pd.cut(df['matrix_size'], bins=10))['efficient'].mean()
-    size_bins = [interval.mid for interval in size_efficiency.index]
-    axes[0,0].plot(size_bins, size_efficiency.values * 100, 'go-', linewidth=2, markersize=8)
+    
+    size_bins = []
+    size_efficiency_values = []
+    
+    for interval, efficiency in size_efficiency.items():
+        if not pd.isna(efficiency):  # Skip NaN values
+            bin_center = (interval.left + interval.right) / 2
+            size_bins.append(bin_center)
+            size_efficiency_values.append(efficiency)
+    
+    axes[0,0].plot(size_bins, np.array(size_efficiency_values) * 100, 'ro-', linewidth=2, markersize=8)
     axes[0,0].set_xlabel('Matrix Size')
     axes[0,0].set_ylabel('Efficiency Rate (%)')
     axes[0,0].set_title('Efficiency vs Matrix Size')
@@ -254,8 +263,17 @@ def create_visualizations(df: pd.DataFrame, output_dir: str = "plots"):
     
     # Efficiency vs Matrix Density
     density_efficiency = df.groupby(pd.cut(df['matrix_density'], bins=10))['efficient'].mean()
-    density_bins = [interval.mid for interval in density_efficiency.index if not pd.isna(interval.mid)]
-    efficiency_values = [val for val in density_efficiency.values if not pd.isna(val)]
+    
+    # Get bin centers for plotting
+    density_bins = []
+    efficiency_values = []
+    
+    for interval, efficiency in density_efficiency.items():
+        if not pd.isna(efficiency):  # Skip NaN values
+            bin_center = (interval.left + interval.right) / 2
+            density_bins.append(bin_center)
+            efficiency_values.append(efficiency)
+    
     axes[0,1].plot(density_bins, np.array(efficiency_values) * 100, 'bo-', linewidth=2, markersize=8)
     axes[0,1].set_xlabel('Matrix Density')
     axes[0,1].set_ylabel('Efficiency Rate (%)')

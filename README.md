@@ -104,3 +104,35 @@ Haplotypes 4: 2 matrices, avg ILP calls: 22.0, avg time: 1.23s
 Haplotypes 5: 2 matrices, avg ILP calls: 31.5, avg time: 1.67s
 Haplotypes 6: 2 matrices, avg ILP calls: 42.0, avg time: 2.01s
 ```
+
+# StrainMiner Pipeline
+
+Pipeline d'analyse génomique simplifié.
+
+## Scripts Disponibles
+
+**`run_knn.sh`** - Pipeline complet KNN
+- Create CSV → KNN experiment → KNN normal → ilphaplo
+- Usage: `sbatch run_knn.sh`
+
+**`run.sh`** - Pipeline séquentiel
+- Create CSV → KNN → ilphaplo  
+- Usage: `sbatch run.sh`
+
+## Structure
+```
+/experiment/
+├── bam/           # Fichiers BAM
+├── create_csv/    # Scripts CSV
+├── Knn/          # Scripts KNN
+└── ilphaplo/     # Scripts haplotypes
+```
+
+## Analyse
+```bash
+python Knn/analyze_results.py
+```
+
+## Prérequis
+- Environment `strainminer`
+- Fichiers BAM dans `bam/`
