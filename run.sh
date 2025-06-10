@@ -40,3 +40,7 @@ else
 fi
 
 echo "🎉 Sequential pipeline finished!"
+
+# KNN Experiment
+echo "=== KNN Experiment Mode ==="
+python Knn/impute_matrices.py matrices_no_binarize --experiment
