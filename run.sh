@@ -12,13 +12,13 @@ echo "🚀 StrainMiner - Sequential Pipeline"
 echo "==================================="
 
 # Step 1: Create CSV
-echo "=== Step 1: Creating CSV Matrices ==="
-if python create_csv/process_bam_folder.py bam .; then
-    echo "✅ CSV creation completed successfully!"
-else
-    echo "❌ CSV creation failed"
-    exit 1
-fi
+# echo "=== Step 1: Creating CSV Matrices ==="
+# if python create_csv/process_bam_folder.py bam .; then
+#     echo "✅ CSV creation completed successfully!"
+# else
+#     echo "❌ CSV creation failed"
+#     exit 1
+# fi
 
 # Step 2: KNN
 echo "=== Step 2: KNN Imputation ==="
