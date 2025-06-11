@@ -20,7 +20,7 @@ except ImportError as e:
 
 def process_single_bam(bam_file_path: Path, output_base_dir: Path, 
                       window_size: int = 100000, overlap: int = 10000,
-                      filtered_row_threshold: float = 0.6):
+                      filtered_col_threshold: float = 0.6):
     """
     Process a single BAM file and save matrices for all contigs.
     
@@ -34,8 +34,8 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
         Size of genomic windows to process
     overlap : int
         Overlap between consecutive windows
-    filtered_row_threshold : float
-        Coverage threshold for reads filtering
+    filtered_col_threshold : float
+        Coverage threshold for columns filtering
     """
     # Get BAM filename without extension for output folder
     bam_name = bam_file_path.stem  # removes .bam extension
@@ -90,7 +90,7 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                             # Create and filter matrix
                             X_matrix, reads = create_matrix(
                                 dict_of_sus_pos,
-                                filtered_row_threshold,
+                                filtered_col_threshold,
                                 contig_size=contig_size,
                                 contig_name=contig_name,
                                 start_pos=start_pos,
@@ -126,7 +126,7 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
 
 def process_bam_folder(bam_folder: Path, output_folder: Path, 
                       window_size: int = 100000, overlap: int = 10000,
-                      filtered_row_threshold: float = 0.6):
+                      filtered_col_threshold: float = 0.6):
     """
     Process all BAM files in a folder.
     
@@ -140,8 +140,8 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
         Size of genomic windows to process
     overlap : int
         Overlap between consecutive windows
-    filtered_row_threshold : float
-        Coverage threshold for reads filtering
+    filtered_col_threshold : float
+        Coverage threshold for columns filtering
     """
     # Find all BAM files
     bam_files = list(bam_folder.glob("*.bam"))
@@ -153,7 +153,7 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
     print(f"Found {len(bam_files)} BAM files to process")
     
     # Create output directory structure
-    matrices_dir = output_folder / "matrices_no_binarize_" + filtered_row_threshold
+    matrices_dir = output_folder / f"matrices_no_binarize_{filtered_col_threshold}"
     matrices_dir.mkdir(parents=True, exist_ok=True)
     
     successful = 0
@@ -177,7 +177,7 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
                 matrices_dir, 
                 window_size, 
                 overlap, 
-                filtered_row_threshold
+                filtered_col_threshold
             )
             
             if success:

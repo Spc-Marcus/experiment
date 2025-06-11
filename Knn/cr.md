@@ -15,7 +15,7 @@ Missing variant imputation represents a major challenge in genomics, particularl
 - **Distribution by haplotypes**: 2 (150), 3 (8), 4 (150), 6 (150), 8 (150)
 - **Variable sizes**: from small matrices (<5k elements) to very large (>20k elements)
 - **K values tested**: 5 to 25
-- **60%** minimum row coverage
+- **60%** threshold for cols
 
 ### Evaluation metrics
 - Number of uncertain values after imputation and binarization
