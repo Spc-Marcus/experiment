@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=create matrix 100 coverage
+#SBATCH --job-name=create_matrix
 #SBATCH --output=res.txt
 #SBATCH --ntasks=1
 #SBATCH --mem=10G
