@@ -220,8 +220,8 @@ Output structure:
     
     parser.add_argument('bam_folder', type=Path, help='Directory containing BAM files')
     parser.add_argument('output_folder', type=Path, help='Output directory (will create matrices/ subdirectory)')
-    parser.add_argument('--window-size', type=int, default=100000, 
-                       help='Size of genomic windows (default: 100000)')
+    parser.add_argument('--window-size', type=int, default=5000, 
+                       help='Size of genomic windows (default: 5000)')
     parser.add_argument('--overlap', type=int, default=10000,
                        help='Overlap between windows (default: 10000)')
     parser.add_argument('--threshold', type=float, default=0.6,

@@ -1,98 +1,124 @@
-# Performance Analysis of the Haplotyping Algorithm
+# Analysis Report: ILP Haplotype Algorithm Performance
 
 ## Executive Summary
 
-The analysis of 4,128 executions reveals that the algorithm achieves a **global efficiency of 30.4%**, solving 1,256 cases without ILP optimization and requiring optimization for 2,872 complex cases. This performance varies significantly according to input data characteristics.
+The performance analysis of the ILP algorithm on 4,128 data matrices reveals an **overall efficiency rate of 74.3%**, meaning that the majority of problems are solved without resorting to costly ILP optimization.
 
-## Key Results
+## Methodology
 
-### 1. Efficiency by Haplotype Count
+### Analyzed data
+- **4,128 matrices** of genomic variants in total
+- **Distribution by haplotypes**: 2 (1,028), 3 (8), 4 (1,057), 6 (906), 8 (1,129)
+- **Variable sizes**: from small matrices (<10K elements) to very large ones (>250K elements)
+- **Matrix densities**: from 0.6 to 1.0 (binary matrices)
+- **Algorithm parameters**: error threshold 0.025, minimum number of rows/columns per cluster 5/3
+- **60%** minimum row coverage
 
-The algorithm shows a **complex relationship** between haplotype count and efficiency:
+### Evaluation metrics
+- **Total ILP calls** (`ilp_calls_total`): number of optimization resolutions required
+- **Execution time**: total time, preprocessing time, clustering time
+- **Algorithmic efficiency**: percentage of resolution without resorting to ILP
+- **Structural complexity**: size × density, number of detected patterns
+- **Performance by region**: number of regions processed, average region size
 
-- **3 haplotypes**: 87.5% efficiency ⚠️ **LIMITED SAMPLE** (only 8 cases - not representative)
-- **2 haplotypes**: 48.7% efficiency (significant sample)
-- **4 haplotypes**: 28.1% efficiency
-- **6-8 haplotypes**: ~22% efficiency (constant performance)
+### Run classification
+- **Efficient runs (3,069)**: 0 ILP calls (resolution by hierarchical clustering alone)
+- **Complex runs (1,059)**: ≥1 ILP call (requiring Gurobi optimization)
 
-**Important note**: The efficiency peak at 3 haplotypes is **not statistically reliable** due to insufficient sample size (n=8). Robust conclusions are based on other categories with substantial samples.
+### Calculation mechanism
+The number of ILP calls (`ilp_calls_total`) counts **each time the algorithm must solve an optimization sub-problem**:
 
-![Efficiency by haplotype count](plots/efficiency_rate_by_haplotype.png)
+1. **Preprocessing** → Identification of problematic regions
+2. **For each region** → Attempt at simple clustering
+3. **If failure** → Call to `find_quasi_biclique()` with Gurobi optimization
+4. **Counting**: +1 for each successful ILP resolution
 
-### 2. Matrix Size Impact
+```
+0 ILP calls = Efficient algorithm (resolution by simple clustering)
+>0 ILP calls = Complex matrix requiring optimization
+```
 
-The analysis reveals a **critical negative correlation** between matrix size and efficiency:
+**Critical methodological note**: The 3-haplotype group comprises only 8 matrices, drastically limiting the statistical robustness of conclusions for this condition. The analysis focuses primarily on groups 2, 4, 6, and 8 haplotypes representing 4,120 reliable matrices.
 
-- **Matrices < 50,000 elements**: ~50% efficiency
-- **Matrices 50,000-100,000**: ~7% efficiency  
-- **Matrices > 100,000**: <2% efficiency
+## Graph Analysis
 
-![Execution time vs matrix size](plots/time_vs_size_all_data.png)
+### 1. Efficiency Rate by Number of Haplotypes
+![Efficiency Rate by Haplotype](plots/efficiency_rate_by_haplotype.png)
 
-### 3. Matrix Density Role
+The graph shows a **progressive degradation** of efficiency with increasing number of haplotypes:
 
-Matrix density presents an interesting **non-linear pattern**:
+**Key observations:**
+- **Haplotypes 2-3**: Near-perfect efficiency (99.6% and 100%)
+- **Haplotype 4**: Slight decrease (92.1%) but still excellent
+- **Haplotype 6**: Significant drop (55.3%)
+- **Haplotype 8**: Reduced efficiency (49.9%)
 
-- **Density < 0.6**: ~15% efficiency
-- **Density 0.6-0.65**: Peak at ~95% efficiency (**optimal zone**)
-- **Density > 0.7**: Stable efficiency at ~85-100%
+**Interpretation:** The more haplotypes increase, the more structural complexity grows exponentially, forcing the algorithm to resort to ILP optimization.
 
-![Efficiency analysis vs matrix characteristics](plots/efficiency_analysis.png)
+### 2. ILP Calls Distribution
+![ILP Calls Distribution](plots/ilp_calls_distribution.png)
 
-## Distribution of Optimization Requirements
+The graph reveals a **very positive distribution**:
 
-The ILP distribution analysis shows:
+**Observed breakdown:**
+- **~74% of cases (3,069 runs)**: 0 ILP calls (direct resolution by clustering)
+- **~20% of cases**: 1-24 ILP calls (moderate complexity)
+- **~6% of cases**: >25 ILP calls (very complex cases)
 
-- **1,256 efficient cases** (0 ILP calls) - **Ideal**
-- **2,872 complex cases** requiring ILP optimization:
-  - 336 cases: 1-4 ILP calls (light optimization)
-  - 501 cases: 5-9 ILP calls  
-  - 1,054 cases: 10-24 ILP calls (moderate optimization)
-  - 744 cases: 25-49 ILP calls (intensive optimization)
-  - 237 cases: 50+ ILP calls (very complex cases)
+**Significance:** The overwhelming majority of matrices are processed efficiently without costly optimization.
 
-![ILP calls distribution](plots/ilp_calls_distribution.png)
+### 3. Execution Time vs Matrix Size
+![Execution Time vs Matrix Size](plots/time_vs_size_all_data.png)
 
-## Performance Patterns
+The graph shows a **clear correlation** between size and complexity:
 
-### Efficient Cases (No ILP)
-Efficient executions present distinct characteristics:
-- **Smaller matrices**: optimized average size
-- **High density**: generally > 0.7
-- **Fast execution time**: < 0.5 seconds typically
-- **Concentrated distribution**: in the low complexity zone
+**Observed trends:**
+- **Small matrices** (<50K): Constant times, very fast
+- **Medium matrices** (50-100K): Moderate dispersion
+- **Large matrices** (>100K): Some complex cases with high times
+- **Clear differentiation** between efficient points (low) and complex ones (scattered)
 
-### Complex Cases (With ILP)
-Cases requiring ILP optimization show:
-- **Wide range of sizes**: from small to very large matrices
-- **Variable execution times**: 0.1 to 50+ seconds
-- **Complexity-time correlation**: visible but with high variance
-- **Extended distribution**: across the entire parameter space
+### 4. Multi-Factor Efficiency Analysis
+![Efficiency Analysis](plots/efficiency_analysis.png)
 
-![Complex vs efficient cases comparison](plots/complex_vs_efficient_comparison.png)
+The 4 sub-graphs reveal the **critical factors** of efficiency:
 
-## Strategic Recommendations
+**Matrix size:**
+- **Critical threshold**: Around 50,000 elements
+- **Drastic drop** in efficiency beyond 100,000 elements
 
-### 1. Threshold Optimization
-- **Target zone**: Matrices with density 0.6-0.7 and size < 50K elements
-- **Preprocessing**: Preventive filtering of matrices that are too large or too sparse
+**Matrix density:**
+- **Optimum**: Density >0.9 (near-perfect efficiency)
+- **Critical zone**: Density 0.7-0.8 (efficiency ~50%)
 
-### 2. Adaptive Strategies
-- **Prediction heuristics**: Estimate complexity before execution
-- **Dynamic thresholds**: Adjust parameters according to detected characteristics
-- **Early optimization**: Trigger ILP more quickly for certain profiles
+**Complexity** (size × density):
+- Direct correlation: the more complexity increases, the more ILP calls are necessary
 
-### 3. Algorithm Improvement
-- **Data collection**: Increase sample for 3 haplotypes before definitive conclusions
-- **Large matrices**: Develop decomposition strategies
-- **Parallelization**: For cases requiring numerous ILP calls
+### 5. Efficient vs Complex Runs Comparison
+![Complex vs Efficient Runs](plots/complex_vs_efficient_comparison.png)
 
-## Analysis Limitations
+The comparison graph shows two **distinct populations**:
 
-⚠️ **Sampling bias**: The "3 haplotypes" category (n=8) requires a larger sample for statistical validation. Robust conclusions are based on categories with n>100.
+**Efficient runs (3,069 cases):**
+- Constant and very low execution time
+- Generally smaller matrices
+- Concentration on simple haplotypes
+- **74.3% of total runs**
 
-⚠️ **Absence of output validation**: This analysis focuses solely on performance metrics (execution time, ILP calls) without verifying the **quality or correctness of outputs** produced by the preprocessing algorithm and ILP optimization. Biological results and precision of reconstructed haplotypes are not evaluated.
+**Complex runs (1,059 cases):**
+- Significant dispersion of execution times
+- Strong size-time correlation
+- Predominance of complex haplotypes (6-8)
+- **25.7% of total runs**
 
-## Conclusion
+## Detailed Conclusions
 
-The algorithm presents **highly input-dependent performance**. The **optimal efficiency zone** is located in matrices with density 0.6-0.7 and moderate size. However, the **rapid degradation** for complex cases indicates a need for targeted optimization to maintain performance across all usage scenarios.
+### Algorithm Strengths
+1. **Remarkable efficiency**: 74.3% resolution without optimization (3,069/4,128)
+2. **Adaptability**: Excellent performance on simple matrices, progressive degradation on complex matrices
+3. **Predictability**: Clearly identifiable efficiency factors
+
+### Identified Critical Factors
+1. **Number of haplotypes**: Major impact (from 100% to 50% efficiency)
+2. **Matrix size**: Critical threshold at ~50K elements
+3. **Density**: Optimum >0.9, problematic <0.8
