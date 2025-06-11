@@ -12,7 +12,7 @@ The performance analysis of the ILP algorithm on 4,128 data matrices reveals an 
 - **Variable sizes**: from small matrices (<10K elements) to very large ones (>250K elements)
 - **Matrix densities**: from 0.6 to 1.0 (binary matrices)
 - **Algorithm parameters**: error threshold 0.025, minimum number of rows/columns per cluster 5/3
-- **60%** minimum row coverage
+- **60%** threshold for cols
 
 ### Evaluation metrics
 - **Total ILP calls** (`ilp_calls_total`): number of optimization resolutions required

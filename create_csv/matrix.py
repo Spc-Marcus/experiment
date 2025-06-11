@@ -151,7 +151,6 @@ def create_matrix(dict_of_sus_pos : dict, min_coverage_threshold :int =0.6,
     # Save as CSV if conditions are met
     if (csv_output_dir is not None and 
         contig_size > 90000 and 
-        matrix.size > 0 and
         matrix.shape[0] >= 20 and 
         matrix.shape[1] >= 20):
         

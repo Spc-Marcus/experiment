@@ -6,7 +6,7 @@ from matrix import create_matrix
 
 def process_genomic_data(bam_file_path: str, output_dir: str, 
                         contig_name: str, start_pos: int, end_pos: int,
-                        filtered_col_threshold: float = 0.6):
+                        filtered_row_threshold: float = 0.6):
     """
     Example function showing how to use the updated get_data and create_matrix functions.
     """
@@ -43,7 +43,7 @@ def process_genomic_data(bam_file_path: str, output_dir: str,
             # Create and filter matrix using create_matrix function with CSV saving
             X_matrix, reads = create_matrix(
                 dict_of_sus_pos, 
-                filtered_col_threshold,
+                filtered_row_threshold,
                 contig_size=contig_size,
                 contig_name=contig_name,
                 start_pos=start_pos,

@@ -9,7 +9,7 @@ def main():
     parser.add_argument('contig', help='Contig name')
     parser.add_argument('start', type=int, help='Start position')
     parser.add_argument('end', type=int, help='End position')
-    parser.add_argument('--threshold', type=float, default=0.6, help='Coverage threshold (default: 0.6)')
+    parser.add_argument('--threshold', type=float, default=0.6, help='Minimum read coverage threshold: reads must cover at least this fraction of variant positions (default: 0.6)')
     
     args = parser.parse_args()
     
