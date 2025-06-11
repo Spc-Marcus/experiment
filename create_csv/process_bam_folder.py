@@ -225,8 +225,6 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
     print(f"Output saved to: {matrices_dir}")
 
 def main():
-    print("DEBUG: Starting main function")
-    
     parser = argparse.ArgumentParser(
         description='Process all BAM files in a directory and create CSV matrices',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -250,7 +248,6 @@ Output structure:
           └── ...
         """
     )
-    print("DEBUG: Created argument parser")
     
     parser.add_argument('bam_folder', type=Path, help='Directory containing BAM files')
     parser.add_argument('output_folder', type=Path, help='Output directory (will create matrices/ subdirectory)')
@@ -261,34 +258,24 @@ Output structure:
     parser.add_argument('--threshold', type=float, default=0.6,
                        help='Minimum read coverage threshold: reads must cover at least this fraction of variant positions (default: 0.6)')
     
-    print("DEBUG: Added arguments")
-    
     args = parser.parse_args()
-    print("DEBUG: Parsed arguments successfully")
     
     # Convert to absolute paths
-    print("DEBUG: Converting paths...")
     bam_folder = args.bam_folder.resolve()
     output_folder = args.output_folder.resolve()
-    print("DEBUG: Paths converted")
     
     # Validate arguments
-    print("DEBUG: Starting validation...")
     if not bam_folder.exists():
         print(f"Error: BAM folder {bam_folder} does not exist")
         sys.exit(1)
-    print("DEBUG: BAM folder exists")
     
     if not bam_folder.is_dir():
         print(f"Error: {bam_folder} is not a directory")
         sys.exit(1)
-    print("DEBUG: BAM folder is directory")
     
     # Check if we can write to output directory
-    print("DEBUG: Checking output directory...")
     try:
         output_folder.mkdir(parents=True, exist_ok=True)
-        print("DEBUG: Output directory created/verified")
     except PermissionError:
         print(f"Error: Permission denied to create/write to {output_folder}")
         print("Try using a directory in your home folder or current working directory")
@@ -297,7 +284,6 @@ Output structure:
         print(f"Error creating output directory {output_folder}: {e}")
         sys.exit(1)
     
-    print("DEBUG: Validating parameters...")
     if args.window_size <= 0:
         print("Error: Window size must be positive")
         sys.exit(1)
@@ -306,14 +292,11 @@ Output structure:
         print("Error: Threshold must be between 0.0 and 1.0")
         sys.exit(1)
     
-    print("DEBUG: All validation passed")
-    
     print(f"Input BAM folder: {bam_folder}")
     print(f"Output folder: {output_folder}")
     
     # Process all BAM files
     try:
-        print("DEBUG: Starting BAM processing...")
         process_bam_folder(
             bam_folder,
             output_folder, 
