@@ -45,6 +45,7 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
     output_dir.mkdir(parents=True, exist_ok=True)
     
     print(f"Processing {bam_file_path} -> {output_dir}")
+    print(f"File size: {bam_file_path.stat().st_size / (1024*1024):.1f} MB")
     
     total_matrices_saved = 0
     total_variants = 0
@@ -57,7 +58,15 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
             
             print(f"Found {len(contigs)} contigs in {bam_name}")
             
+            # Process only first few contigs to avoid hanging
+            max_contigs = 10  # Limit for testing
+            processed_contigs = 0
+            
             for contig_name, contig_length in zip(contigs, contig_lengths):
+                if processed_contigs >= max_contigs:
+                    print(f"  Stopping after {max_contigs} contigs for testing...")
+                    break
+                    
                 print(f"  Processing contig {contig_name} (length: {contig_length:,} bp)")
                 
                 # Use different window sizes based on contig length
@@ -74,9 +83,12 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                 # Process contig in sliding windows
                 start_pos = 0
                 window_count = 0
+                max_windows = 50  # Limit windows per contig
                 
-                while start_pos < contig_length:
+                while start_pos < contig_length and window_count < max_windows:
                     end_pos = min(start_pos + contig_window_size, contig_length)
+                    
+                    print(f"    Processing window {window_count+1}: {start_pos}-{end_pos}")
                     
                     try:
                         # Extract variant data
@@ -85,6 +97,7 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                         )
                         
                         total_variants += len(dict_of_sus_pos)
+                        print(f"      Found {len(dict_of_sus_pos)} variants")
                         
                         if dict_of_sus_pos:
                             # Create and filter matrix
@@ -103,28 +116,37 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                                 X_matrix.shape[0] >= 20 and 
                                 X_matrix.shape[1] >= 20):
                                 total_matrices_saved += 1
-                                print(f"    Window {start_pos}-{end_pos}: CSV saved (matrix: {X_matrix.shape})")
+                                print(f"      CSV saved (matrix: {X_matrix.shape})")
                             else:
-                                print(f"    Window {start_pos}-{end_pos}: {len(dict_of_sus_pos)} variants, matrix: {X_matrix.shape if X_matrix.size > 0 else 'empty'}")
+                                print(f"      Matrix: {X_matrix.shape if X_matrix.size > 0 else 'empty'}")
+                        else:
+                            print(f"      No variants found")
                         
                         window_count += 1
                         
                     except Exception as e:
-                        print(f"    Error processing window {start_pos}-{end_pos}: {e}")
+                        print(f"      Error processing window {start_pos}-{end_pos}: {e}")
                     
-                    # Move to next window - fixed logic to prevent negative positions
+                    # Calculate next start position
                     if contig_overlap >= contig_window_size:
-                        # If overlap >= window size, just advance by 1 to avoid infinite loop
-                        start_pos += 1
+                        # If overlap >= window size, advance by small amount to avoid infinite loop
+                        next_start = start_pos + max(1, contig_window_size // 4)
                     else:
                         # Normal advancement: move by (window_size - overlap)
-                        start_pos += contig_window_size - contig_overlap
+                        next_start = start_pos + contig_window_size - contig_overlap
                     
-                    # Safety check to prevent infinite loop
-                    if start_pos <= end_pos - contig_window_size and end_pos >= contig_length:
+                    # Ensure we make progress
+                    if next_start <= start_pos:
+                        next_start = start_pos + 1
+                    
+                    start_pos = next_start
+                    
+                    # Break if we've reached the end
+                    if start_pos >= contig_length:
                         break
                 
                 print(f"    Completed {window_count} windows for {contig_name}")
+                processed_contigs += 1
     
     except Exception as e:
         print(f"Error processing {bam_file_path}: {e}")
@@ -203,6 +225,8 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
     print(f"Output saved to: {matrices_dir}")
 
 def main():
+    print("DEBUG: Starting main function")
+    
     parser = argparse.ArgumentParser(
         description='Process all BAM files in a directory and create CSV matrices',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -226,6 +250,7 @@ Output structure:
           └── ...
         """
     )
+    print("DEBUG: Created argument parser")
     
     parser.add_argument('bam_folder', type=Path, help='Directory containing BAM files')
     parser.add_argument('output_folder', type=Path, help='Output directory (will create matrices/ subdirectory)')
@@ -236,24 +261,34 @@ Output structure:
     parser.add_argument('--threshold', type=float, default=0.6,
                        help='Minimum read coverage threshold: reads must cover at least this fraction of variant positions (default: 0.6)')
     
+    print("DEBUG: Added arguments")
+    
     args = parser.parse_args()
+    print("DEBUG: Parsed arguments successfully")
     
     # Convert to absolute paths
+    print("DEBUG: Converting paths...")
     bam_folder = args.bam_folder.resolve()
     output_folder = args.output_folder.resolve()
+    print("DEBUG: Paths converted")
     
     # Validate arguments
+    print("DEBUG: Starting validation...")
     if not bam_folder.exists():
         print(f"Error: BAM folder {bam_folder} does not exist")
         sys.exit(1)
+    print("DEBUG: BAM folder exists")
     
     if not bam_folder.is_dir():
         print(f"Error: {bam_folder} is not a directory")
         sys.exit(1)
+    print("DEBUG: BAM folder is directory")
     
     # Check if we can write to output directory
+    print("DEBUG: Checking output directory...")
     try:
         output_folder.mkdir(parents=True, exist_ok=True)
+        print("DEBUG: Output directory created/verified")
     except PermissionError:
         print(f"Error: Permission denied to create/write to {output_folder}")
         print("Try using a directory in your home folder or current working directory")
@@ -262,6 +297,7 @@ Output structure:
         print(f"Error creating output directory {output_folder}: {e}")
         sys.exit(1)
     
+    print("DEBUG: Validating parameters...")
     if args.window_size <= 0:
         print("Error: Window size must be positive")
         sys.exit(1)
@@ -270,11 +306,14 @@ Output structure:
         print("Error: Threshold must be between 0.0 and 1.0")
         sys.exit(1)
     
+    print("DEBUG: All validation passed")
+    
     print(f"Input BAM folder: {bam_folder}")
     print(f"Output folder: {output_folder}")
     
     # Process all BAM files
     try:
+        print("DEBUG: Starting BAM processing...")
         process_bam_folder(
             bam_folder,
             output_folder, 
