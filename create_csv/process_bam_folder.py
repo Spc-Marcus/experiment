@@ -112,8 +112,17 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                     except Exception as e:
                         print(f"    Error processing window {start_pos}-{end_pos}: {e}")
                     
-                    # Move to next window
-                    start_pos += contig_window_size - contig_overlap
+                    # Move to next window - fixed logic to prevent negative positions
+                    if contig_overlap >= contig_window_size:
+                        # If overlap >= window size, just advance by 1 to avoid infinite loop
+                        start_pos += 1
+                    else:
+                        # Normal advancement: move by (window_size - overlap)
+                        start_pos += contig_window_size - contig_overlap
+                    
+                    # Safety check to prevent infinite loop
+                    if start_pos <= end_pos - contig_window_size and end_pos >= contig_length:
+                        break
                 
                 print(f"    Completed {window_count} windows for {contig_name}")
     
