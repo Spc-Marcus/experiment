@@ -69,21 +69,20 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                     
                 print(f"  Processing contig {contig_name} (length: {contig_length:,} bp)")
                 
-                # Use different window sizes based on contig length
-                if contig_length > 90000:
-                    # For large contigs, use small windows of 5000 bp
-                    contig_window_size = 5000
-                    contig_overlap = 0  # No overlap for small windows
-                    print(f"    Large contig detected - using {contig_window_size} bp windows")
-                else:
-                    # For small contigs, use provided window size
-                    contig_window_size = window_size
-                    contig_overlap = overlap
+                # Skip small contigs entirely
+                if contig_length <= 90000:
+                    print(f"    Skipping small contig (≤90,000 bp)")
+                    continue
                 
-                # Process contig in sliding windows
+                # For large contigs, use 5000 bp windows with no overlap
+                contig_window_size = 5000
+                contig_overlap = 0
+                print(f"    Large contig detected - using {contig_window_size} bp windows")
+                
+                # Process entire contig in 5000 bp windows
                 start_pos = 0
                 window_count = 0
-                max_windows = 50  # Limit windows per contig
+                max_windows = 1000  # Increase limit for large contigs
                 
                 while start_pos < contig_length and window_count < max_windows:
                     end_pos = min(start_pos + contig_window_size, contig_length)
@@ -127,19 +126,8 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                     except Exception as e:
                         print(f"      Error processing window {start_pos}-{end_pos}: {e}")
                     
-                    # Calculate next start position
-                    if contig_overlap >= contig_window_size:
-                        # If overlap >= window size, advance by small amount to avoid infinite loop
-                        next_start = start_pos + max(1, contig_window_size // 4)
-                    else:
-                        # Normal advancement: move by (window_size - overlap)
-                        next_start = start_pos + contig_window_size - contig_overlap
-                    
-                    # Ensure we make progress
-                    if next_start <= start_pos:
-                        next_start = start_pos + 1
-                    
-                    start_pos = next_start
+                    # Move to next window (5000 bp step)
+                    start_pos += contig_window_size
                     
                     # Break if we've reached the end
                     if start_pos >= contig_length:
