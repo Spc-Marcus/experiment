@@ -1,0 +1,43 @@
+================================================================================
+RAPPORT D'ANALYSE DES EXPÉRIENCES DE SEEDING
+================================================================================
+
+INFORMATIONS GÉNÉRALES
+------------------------------
+Fichier source: seeding_experiment_results_20250612_131914.csv
+Nombre d'expériences: 805
+Nombre de fichiers uniques: 23
+Plage d'haplotypes: 8 - 8
+
+PARAMÈTRES TESTÉS
+--------------------
+X_factor: [np.int64(2), np.int64(3), np.int64(4), np.int64(5), np.int64(6)]
+step_n: [np.int64(2), np.int64(4), np.int64(6), np.int64(8), np.int64(10), np.int64(12), np.int64(14)]
+
+MÉTRIQUES DE PERFORMANCE MOYENNES
+-----------------------------------
+Temps total: 1.486s (±2.042)
+Appels ILP: 15.8 (±7.5)
+Patterns trouvés: 15.8 (±7.5)
+Efficacité ILP: 1.000 (±0.000)
+
+MEILLEURES PERFORMANCES
+-------------------------
+Top 5 - Temps total moyen:
+  1. X_factor=5, step_n=12: 1.469s (n=23)
+  2. X_factor=5, step_n=14: 1.471s (n=23)
+  3. X_factor=3, step_n=8: 1.471s (n=23)
+  4. X_factor=2, step_n=14: 1.472s (n=23)
+  5. X_factor=6, step_n=14: 1.473s (n=23)
+
+Top 5 - Efficacité ILP:
+  1. X_factor=2, step_n=2: 1.000 patterns/ILP (n=23)
+  2. X_factor=2, step_n=4: 1.000 patterns/ILP (n=23)
+  3. X_factor=2, step_n=6: 1.000 patterns/ILP (n=23)
+  4. X_factor=2, step_n=8: 1.000 patterns/ILP (n=23)
+  5. X_factor=2, step_n=10: 1.000 patterns/ILP (n=23)
+
+RECOMMANDATIONS
+---------------
+Configuration optimale pour le temps: X_factor=5, step_n=12
+Configuration optimale pour l'efficacité: X_factor=2, step_n=2
