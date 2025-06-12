@@ -1,4 +1,8 @@
 #!/bin/bash
+#SBATCH --job-name=SeedStrainminer
+#SBATCH --output=res.txt
+#SBATCH --ntasks=1
+#SBATCH --mem=12G
 
 echo "🚀 Starting ILP Seeding Parameter Experiments (Haplotypes >= 4)..."
 echo "Working directory: $(pwd)"
