@@ -3,7 +3,8 @@
 #SBATCH --output=res.txt
 #SBATCH --ntasks=1
 #SBATCH --mem=12G
-
+. /local/env/envconda.sh
+conda activate strainminer
 echo "🚀 Starting ILP Seeding Parameter Experiments (Haplotypes >= 4)..."
 echo "Working directory: $(pwd)"
 
