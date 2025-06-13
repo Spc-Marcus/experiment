@@ -521,6 +521,15 @@ def find_quasi_biclique(
         col_time = time.time() - col_start
         total_solve_time += col_time
         phases_executed += 1
+    # Extract final results after column extension
+    rw = []
+    cl = []
+    for var in model.getVars():
+        if var.VarName.startswith('rw') and var.X > 0.5:
+            rw.append(int(var.VarName.split('[')[1].split(']')[0]))
+        elif var.VarName.startswith('cl') and var.X > 0.5:
+            cl.append(int(var.VarName.split('[')[1].split(']')[0]))
+    logger.debug(f"Final solution after column extension: {len(rw)} rows, {len(cl)} columns")  # GARDER CE LOG
     
     # Check optimization status and return appropriate results
     status = model.Status
