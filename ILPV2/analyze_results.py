@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 import argparse
+import os
 
 def load_results(csv_file: str) -> pd.DataFrame:
     """Load experiment results from CSV file."""
@@ -142,6 +143,7 @@ def analyze_scalability(df: pd.DataFrame):
 def create_visualizations(df: pd.DataFrame, output_dir: str = "plots"):
     """Create performance visualization plots for ALL data with correct interpretation."""
     
+    # Create plots directory in current directory if it doesn't exist
     Path(output_dir).mkdir(exist_ok=True)
     
     # Set up plotting style
@@ -301,7 +303,7 @@ def create_visualizations(df: pd.DataFrame, output_dir: str = "plots"):
     plt.savefig(f"{output_dir}/efficiency_analysis.png", dpi=300, bbox_inches='tight')
     plt.close()
     
-    print(f"\nVisualization plots saved to {output_dir}/")
+    print(f"\nVisualization plots saved to current directory: {os.path.abspath(output_dir)}/")
     print(f"- efficiency_rate_by_haplotype.png: Algorithm efficiency by haplotype count")
     print(f"- time_vs_size_all_data.png: All data points execution times")
     print(f"- complex_vs_efficient_comparison.png: ILP-requiring vs efficient runs")
@@ -401,10 +403,23 @@ def main():
     
     args = parser.parse_args()
     
-    # Load and analyze results
-    df = load_results(args.csv_file)
+    # Check if file exists in current directory
+    csv_path = Path(args.csv_file)
+    if not csv_path.exists():
+        # Try to find it in current directory
+        current_dir_file = Path.cwd() / csv_path.name
+        if current_dir_file.exists():
+            csv_path = current_dir_file
+            print(f"Using file from current directory: {csv_path}")
+        else:
+            print(f"Error: File {args.csv_file} not found")
+            return
     
-    print(f"Loaded {len(df)} experiment results from {args.csv_file}")
+    # Load and analyze results
+    df = load_results(str(csv_path))
+    
+    print(f"Loaded {len(df)} experiment results from {csv_path}")
+    print(f"Working in directory: {os.getcwd()}")
     
     # Basic statistics with correct interpretation
     print(f"Total runs: {len(df)}")
@@ -419,7 +434,7 @@ def main():
     # NEW: Algorithm efficiency analysis
     analyze_algorithm_efficiency(df)
     
-    # Generate plots if requested
+    # Generate plots if requested (will create plots/ in current directory)
     if args.plots:
         create_visualizations(df)
 

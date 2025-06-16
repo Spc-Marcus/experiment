@@ -1,47 +1,57 @@
 #!/bin/bash
-#SBATCH --job-name=strainminer
-#SBATCH --output=res.txt
-#SBATCH --ntasks=1
-#SBATCH --mem=10G
-
-. /local/env/envconda.sh
-conda activate strainminer
-. /local/env/envsamtools-1.15.sh
 
 echo "=== Running Solver Comparison Experiments ==="
-echo "This will test all three solvers: gurobi, max_ones, max_ones_comp"
 
 # Set up environment
-cd "$(dirname "$0")"
+if [ -n "$SLURM_JOB_ID" ]; then
+    if [ -n "$SLURM_SUBMIT_DIR" ]; then
+        cd "$SLURM_SUBMIT_DIR"
+    fi
+else
+    cd "$(dirname "$0")"
+fi
+
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
-# Create results directory
-mkdir -p comparison_results
-timestamp=$(date +%Y%m%d_%H%M%S)
+# Find matrices directory
+matrices_found=false
+for matrices_path in "matrices" "../matrices" "./matrices" "matrice" "../matrice" "./matrice"; do
+    if [ -d "$matrices_path" ]; then
+        csv_count=0
+        for hap in {2..10}; do
+            if [ -d "$matrices_path/$hap" ]; then
+                hap_csv_count=$(find "$matrices_path/$hap" -name "*.csv" 2>/dev/null | wc -l)
+                csv_count=$((csv_count + hap_csv_count))
+            fi
+        done
+        direct_csv_count=$(find "$matrices_path" -maxdepth 1 -name "*.csv" 2>/dev/null | wc -l)
+        csv_count=$((csv_count + direct_csv_count))
+        
+        if [ $csv_count -gt 0 ]; then
+            matrices_found=true
+            matrices_dir="$matrices_path"
+            break
+        fi
+    fi
+done
 
-# Array of solvers to test
-solvers=("max_ones" "max_ones_comp")
-
-echo ""
-echo "Starting solver comparison at $(date)"
-echo "Results will be saved with timestamp: $timestamp"
+if [ "$matrices_found" = false ]; then
+    echo "Error: No matrices directory found"
+    exit 1
+fi
 
 # Run experiments for each solver
+solvers=("gurobi" "max_ones" "max_ones_comp")
+
 for solver in "${solvers[@]}"; do
-    echo ""
-    echo "=== Testing $solver solver ==="
-    
-    if bash /home/genouest/genscale/mfoin/Dev/experiment/ILPV2/run_batch.sh --solver "$solver"; then
+    echo "Testing $solver solver..."
+    bash ILPV2/run_batch.sh --solver "$solver" "$matrices_dir"
+done
+
+echo "Done!"
         echo "✅ $solver experiments completed successfully"
-        
-        # Move results to comparison directory
-        if ls experiment_results_${solver}_*.csv 1> /dev/null 2>&1; then
-            latest_result=$(ls -t experiment_results_${solver}_*.csv | head -n1)
-            cp "$latest_result" "comparison_results/results_${solver}_${timestamp}.csv"
-            echo "Results copied to: comparison_results/results_${solver}_${timestamp}.csv"
-        fi
     else
         echo "❌ $solver experiments failed"
     fi
 done
-echo "✅ All solver comparisons completed"
+

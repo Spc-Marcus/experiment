@@ -303,7 +303,7 @@ def process_all_matrices(base_dir: str = None, solver_type: str = "gurobi") -> L
     return results
 
 def save_results_to_csv(results: List[Dict[str, Any]], output_file: str = "experiment_results.csv"):
-    """Save experiment results to CSV file."""
+    """Save experiment results to CSV file in current directory."""
     
     if not results:
         print("No results to save")
@@ -315,64 +315,19 @@ def save_results_to_csv(results: List[Dict[str, Any]], output_file: str = "exper
     # Sort by solver type, haplotype count and matrix size
     df = df.sort_values(['solver_type', 'haplotype_count', 'matrix_size'], ascending=[True, True, True])
     
-    # Save to CSV
+    # Save to CSV in current directory
     df.to_csv(output_file, index=False)
-    print(f"Results saved to {output_file}")
-    
-    # Print summary statistics with solver breakdown
-    print("\n=== EXPERIMENT SUMMARY ===")
-    print(f"Total matrices processed: {len(df)}")
-    
-    # Group by solver type
-    solver_summary = df.groupby('solver_type').agg({
-        'ilp_calls_total': ['count', lambda x: (x == 0).sum(), lambda x: (x > 0).sum()],
-        'total_time': ['mean', 'sum'],
-        'patterns_found': 'mean'
-    }).round(3)
-    
-    print(f"\n=== SOLVER COMPARISON ===")
-    for solver in df['solver_type'].unique():
-        solver_df = df[df['solver_type'] == solver]
-        efficient_count = len(solver_df[solver_df['ilp_calls_total'] == 0])
-        efficiency_rate = efficient_count / len(solver_df) * 100
-        avg_time = solver_df['total_time'].mean()
-        avg_ilp_calls = solver_df['ilp_calls_total'].mean()
-        
-        print(f"{solver}: {len(solver_df)} runs, "
-              f"efficiency: {efficiency_rate:.1f}%, "
-              f"avg ILP calls: {avg_ilp_calls:.1f}, "
-              f"avg time: {avg_time:.3f}s")
-    
-    if len(df) > 0:
-        all_runs_df = df
-        print(f"\nHaplotype counts: {sorted(all_runs_df['haplotype_count'].unique())}")
-        print(f"Matrix sizes range: {all_runs_df['matrix_size'].min()} - {all_runs_df['matrix_size'].max()}")
-        print(f"Total ILP calls across all runs: {all_runs_df['ilp_calls_total'].sum()}")
-        print(f"Total processing time: {all_runs_df['total_time'].sum():.2f}s")
-        print(f"Average ILP calls per matrix: {all_runs_df['ilp_calls_total'].mean():.1f}")
-        print(f"Average patterns found per matrix: {all_runs_df['patterns_found'].mean():.1f}")
-        
-        # Group by haplotype count
-        print(f"\n=== BY HAPLOTYPE COUNT ===")
-        for hap_count in sorted(all_runs_df['haplotype_count'].unique()):
-            hap_df = all_runs_df[all_runs_df['haplotype_count'] == hap_count]
-            efficient_count = len(hap_df[hap_df['ilp_calls_total'] == 0])
-            efficiency_rate = efficient_count / len(hap_df) * 100
-            print(f"Haplotypes {hap_count}: {len(hap_df)} matrices, "
-                  f"avg ILP calls: {hap_df['ilp_calls_total'].mean():.1f}, "
-                  f"avg time: {hap_df['total_time'].mean():.2f}s, "
-                  f"efficiency: {efficiency_rate:.1f}%")
+    print(f"Results saved to: {os.path.abspath(output_file)}")
 
-def run_experiments(solver_type: str = "gurobi"):  # NEW: Add solver parameter
+def run_experiments(solver_type: str = "gurobi"):
     """Main function to run all experiments."""
     
-    print(f"Starting matrix processing experiments with {solver_type} solver...")
-    print(f"Working directory: {os.getcwd()}")
+    print(f"Starting experiments with {solver_type} solver...")
     
     # Process all matrices
     results = process_all_matrices(solver_type=solver_type)
     
-    # Save results
+    # Save results directly
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     output_file = f"experiment_results_{solver_type}_{timestamp}.csv"
     save_results_to_csv(results, output_file)
@@ -393,6 +348,52 @@ if __name__ == "__main__":
     if args.base_dir:
         results = process_all_matrices(args.base_dir, args.solver)
         timestamp = time.strftime("%Y%m%d_%H%M%S")
+        # Save directly in current directory
+        output_file = f"experiment_results_{args.solver}_{timestamp}.csv"
+        save_results_to_csv(results, output_file)
+    else:
+        results = run_experiments(args.solver)
+        print(f"\n=== BY HAPLOTYPE COUNT ===")
+        for hap_count in sorted(all_runs_df['haplotype_count'].unique()):
+            hap_df = all_runs_df[all_runs_df['haplotype_count'] == hap_count]
+            efficient_count = len(hap_df[hap_df['ilp_calls_total'] == 0])
+            efficiency_rate = efficient_count / len(hap_df) * 100
+            print(f"Haplotypes {hap_count}: {len(hap_df)} matrices, "
+                  f"avg ILP calls: {hap_df['ilp_calls_total'].mean():.1f}, "
+                  f"avg time: {hap_df['total_time'].mean():.2f}s, "
+                  f"efficiency: {efficiency_rate:.1f}%")
+
+def run_experiments(solver_type: str = "gurobi"):  # NEW: Add solver parameter
+    """Main function to run all experiments."""
+    
+    print(f"Starting matrix processing experiments with {solver_type} solver...")
+    print(f"Working directory: {os.getcwd()}")
+    
+    # Process all matrices
+    results = process_all_matrices(solver_type=solver_type)
+    
+    # Save results directly in current directory
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    output_file = f"experiment_results_{solver_type}_{timestamp}.csv"
+    save_results_to_csv(results, output_file)
+    
+    return results
+
+if __name__ == "__main__":
+    # NEW: Add command line argument parsing
+    parser = argparse.ArgumentParser(description='Run ILP haplotype experiments')
+    parser.add_argument('--solver', choices=['gurobi', 'max_ones', 'max_ones_comp'], 
+                       default='gurobi', help='Solver to use (default: gurobi)')
+    parser.add_argument('base_dir', nargs='?', help='Base directory containing matrices (optional)')
+    
+    args = parser.parse_args()
+    
+    print(f"Using solver: {args.solver}")
+    
+    if args.base_dir:
+        results = process_all_matrices(args.base_dir, args.solver)
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        # Save directly in current directory
         output_file = f"experiment_results_{args.solver}_{timestamp}.csv"
         save_results_to_csv(results, output_file)
     else:

@@ -1,3 +1,7 @@
+from pulp import LpProblem, LpVariable, LpMaximize, lpSum
+import gurobipy as gp
+from gurobipy import GRB
+
 def max_Ones(rows_data, cols_data, edges, rho):
     """
     ARGUMENTS:
@@ -120,9 +124,6 @@ def max_Ones_comp(rows_data, cols_data, edges, rho):
 
     return model
 
-
-import gurobipy as gp
-from gurobipy import GRB
 
 def max_Ones_gurobi(rows_data, cols_data, edges, rho):
     """

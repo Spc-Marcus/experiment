@@ -1,12 +1,9 @@
 #!/bin/bash
 
 echo "Starting batch processing of matrices..."
-echo "Working directory: $(pwd)"
 
-# NEW: Parse command line arguments for solver selection
-SOLVER="gurobi"  # Default solver
-HELP=false
-
+# Parse arguments
+SOLVER="gurobi"
 while [[ $# -gt 0 ]]; do
     case $1 in
         --solver)
@@ -14,80 +11,83 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --help|-h)
-            HELP=true
-            shift
+            echo "Usage: $0 [--solver gurobi|max_ones|max_ones_comp] [matrix_directory]"
+            exit 0
             ;;
         *)
-            # Assume it's the directory path
             MATRIX_DIR="$1"
             shift
             ;;
     esac
 done
 
-if [ "$HELP" = true ]; then
-    echo "Usage: $0 [--solver gurobi|max_ones|max_ones_comp] [matrix_directory]"
-    echo ""
-    echo "Options:"
-    echo "  --solver     Solver to use: gurobi (default), max_ones, or max_ones_comp"
-    echo "  matrix_dir   Directory containing matrices (optional, auto-detected if not provided)"
-    echo ""
-    echo "Examples:"
-    echo "  $0                                    # Use default gurobi solver, auto-detect matrices"
-    echo "  $0 --solver max_ones                 # Use max_ones solver, auto-detect matrices"
-    echo "  $0 --solver max_ones_comp matrices/  # Use max_ones_comp solver, use matrices/ directory"
-    exit 0
-fi
-
-# Validate solver choice
+# Validate solver
 case $SOLVER in
     gurobi|max_ones|max_ones_comp)
         echo "Using solver: $SOLVER"
         ;;
     *)
-        echo "Error: Invalid solver '$SOLVER'. Must be one of: gurobi, max_ones, max_ones_comp"
+        echo "Error: Invalid solver '$SOLVER'"
         exit 1
         ;;
 esac
 
-# Set Python path to include experiment directory
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/.."
 
-# Check for existing matrix directories
-echo "Searching for matrix data directories..."
-
-found_dir=""
-csv_count=0
-
-# Check KNN output directory first - look for numbered subdirectories
-for matrices_path in "../matrices" "matrices" "./matrices"; do
-    if [ -d "$matrices_path" ]; then
-        echo "Found KNN matrices directory: $matrices_path"
-        
-        # Check for numbered subdirectories (haplotype counts)
-        subdirs=""
-        local_csv_count=0
-        for hap in {2..10}; do
-            if [ -d "$matrices_path/$hap" ]; then
-                subdirs="$subdirs $hap"
-                hap_csv_count=$(find "$matrices_path/$hap" -name "*.csv" | wc -l)
-                local_csv_count=$((local_csv_count + hap_csv_count))
-                echo "  Haplotype $hap: $hap_csv_count CSV files"
-            fi
-        done
-        
-        # Also check for direct CSV files in matrices directory
-        direct_csv_count=$(find "$matrices_path" -maxdepth 1 -name "*.csv" | wc -l)
-        if [ $direct_csv_count -gt 0 ]; then
-            echo "  Direct CSV files: $direct_csv_count"
+# Find matrices directory if not provided
+if [ -z "$MATRIX_DIR" ]; then
+    for matrices_path in "../matrices" "matrices" "./matrices"; do
+        if [ -d "$matrices_path" ]; then
+            local_csv_count=0
+            for hap in {2..10}; do
+                if [ -d "$matrices_path/$hap" ]; then
+                    hap_csv_count=$(find "$matrices_path/$hap" -name "*.csv" | wc -l)
+                    local_csv_count=$((local_csv_count + hap_csv_count))
+                fi
+            done
+            direct_csv_count=$(find "$matrices_path" -maxdepth 1 -name "*.csv" | wc -l)
             local_csv_count=$((local_csv_count + direct_csv_count))
+            
+            if [ $local_csv_count -gt 0 ]; then
+                MATRIX_DIR="$matrices_path"
+                break
+            fi
         fi
-        
-        if [ $local_csv_count -gt 0 ]; then
-            found_dir="$matrices_path"
-            csv_count=$local_csv_count
-            if [ ! -z "$subdirs" ]; then
-                echo "  Haplotype subdirectories found:$subdirs"
+    done
+fi
+
+if [ -z "$MATRIX_DIR" ]; then
+    echo "No matrix directory found"
+    exit 1
+fi
+
+# Run experiment
+python ilphaplo/run_experiments.py --solver "$SOLVER" "$MATRIX_DIR"
+    echo "No matrix data directories found"
+    exit 1
+fi
+
+if [ $csv_count -eq 0 ]; then
+    echo "No CSV files found"
+    exit 1
+fi
+
+# Run experiment
+echo "Running experiment with $SOLVER solver..."
+if [ -n "$MATRIX_DIR" ]; then
+    python ilphaplo/run_experiments.py --solver "$SOLVER" "$MATRIX_DIR"
+else
+    python ilphaplo/run_experiments.py --solver "$SOLVER" "$found_dir"
+fi
+
+# Check results
+if ls experiment_results_${SOLVER}_*.csv 1> /dev/null 2>&1; then
+    latest_result=$(ls -t experiment_results_${SOLVER}_*.csv | head -n1)
+    echo "✅ Results saved to: $latest_result"
+else
+    echo "❌ No results file found"
+    exit 1
+fi
             fi
             echo "  Total CSV files: $csv_count"
             break
