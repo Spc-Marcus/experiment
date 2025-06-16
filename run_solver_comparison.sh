@@ -31,7 +31,7 @@ for solver in "${solvers[@]}"; do
     echo ""
     echo "=== Testing $solver solver ==="
     
-    if bash ILPV2/run_batch.sh --solver "$solver"; then
+    if bash /home/genouest/genscale/mfoin/Dev/experiment/ILPV2/run_batch.sh --solver "$solver"; then
         echo "✅ $solver experiments completed successfully"
         
         # Move results to comparison directory
