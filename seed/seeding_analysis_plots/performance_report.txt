@@ -1,0 +1,37 @@
+================================================================================
+SEEDING EXPERIMENTS ANALYSIS REPORT
+================================================================================
+
+GENERAL INFORMATION
+------------------------------
+Source file: seeding_experiment_results_20250614_122949.csv
+Number of experiments: 92224
+Unique files: 2546
+Haplotypes: [np.int64(4), np.int64(6), np.int64(8)]
+X_factor: [np.int64(2), np.int64(3), np.int64(4), np.int64(5), np.int64(6)]
+step_n: [np.int64(2), np.int64(4), np.int64(6), np.int64(8), np.int64(10), np.int64(12), np.int64(14)]
+
+GLOBAL METRICS
+--------------------
+Average total time: 0.788s (±1.693)
+Average ILP calls: 10.0 (±5.8)
+Average ILP efficiency: 1.000 (±0.000)
+Average patterns: 10.0 (±5.8)
+
+OPTIMAL CONFIGURATIONS
+-------------------------
+⭐ Optimal TIME: X_factor=6, step_n=4
+⭐ Optimal EFFICIENCY: X_factor=2, step_n=2
+⭐ Optimal COMBINED (time+efficiency): X_factor=6, step_n=4
+
+COMBINED SCORE CALCULATION:
+Combined Score = (Normalized_Inverted_Time + Normalized_Efficiency) / 2
+Where:
+  - Normalized_Inverted_Time = 1 - (time - min_time) / (max_time - min_time)
+  - Normalized_Efficiency = (efficiency - min_efficiency) / (max_efficiency - min_efficiency)
+
+TOP 3 CONFIGURATIONS
+--------------------
+1. X_factor=6, step_n=4: 0.783s, 1.000eff (score=1.000, n=2635)
+2. X_factor=6, step_n=2: 0.784s, 1.000eff (score=0.958, n=2635)
+3. X_factor=3, step_n=2: 0.785s, 1.000eff (score=0.917, n=2635)

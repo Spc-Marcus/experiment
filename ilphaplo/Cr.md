@@ -40,6 +40,25 @@ The number of ILP calls (`ilp_calls_total`) counts **each time the algorithm mus
 
 **Critical methodological note**: The 3-haplotype group comprises only 8 matrices, drastically limiting the statistical robustness of conclusions for this condition. The analysis focuses primarily on groups 2, 4, 6, and 8 haplotypes representing 4,120 reliable matrices.
 
+## Reproducibility and Algorithm Determinism
+
+### Issue Identified
+During testing, **non-deterministic behavior** was observed when running the same dataset multiple times, resulting in different numbers of matrices solved through preprocessing alone. This inconsistency affects the reliability of performance metrics.
+
+### Root Causes of Non-Determinism
+1. **Clustering algorithms without fixed random state**:
+   - `FeatureAgglomeration` and `AgglomerativeClustering` from scikit-learn
+   - Internal random processes in tie-breaking during clustering
+   
+2. **Dictionary iteration order**:
+   - Python dictionaries may have different iteration orders between runs
+   - Affects the order of region processing
+   
+3. **Floating-point precision variations**:
+   - Small numerical differences in distance calculations
+   - Can lead to different clustering decisions at boundaries
+
+
 ## Graph Analysis
 
 ### 1. Efficiency Rate by Number of Haplotypes
