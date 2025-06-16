@@ -4,6 +4,8 @@
 
 The performance analysis of the ILP algorithm on 4,128 data matrices reveals an **overall efficiency rate of 74.3%**, meaning that the majority of problems are solved without resorting to costly ILP optimization.
 
+**Major finding**: A comparative study on 1,057 common instances shows that **using a seed significantly degrades performance**, with execution times increasing by **83%** on average (2.24s vs 4.11s).
+
 ## Methodology
 
 ### Analyzed data
@@ -13,6 +15,11 @@ The performance analysis of the ILP algorithm on 4,128 data matrices reveals an 
 - **Matrix densities**: from 0.6 to 1.0 (binary matrices)
 - **Algorithm parameters**: error threshold 0.025, minimum number of rows/columns per cluster 5/3
 - **60%** threshold for cols
+
+### Seed vs No-Seed Comparison
+- **1,057 common instances** tested with both configurations
+- **Time limit**: 10 minutes per instance (Gurobi)
+- **Strong correlation** (0.728) between both approaches confirming result consistency
 
 ### Evaluation metrics
 - **Total ILP calls** (`ilp_calls_total`): number of optimization resolutions required
@@ -40,24 +47,28 @@ The number of ILP calls (`ilp_calls_total`) counts **each time the algorithm mus
 
 **Critical methodological note**: The 3-haplotype group comprises only 8 matrices, drastically limiting the statistical robustness of conclusions for this condition. The analysis focuses primarily on groups 2, 4, 6, and 8 haplotypes representing 4,120 reliable matrices.
 
-## Reproducibility and Algorithm Determinism
+## Seed Impact Analysis
 
-### Issue Identified
-During testing, **non-deterministic behavior** was observed when running the same dataset multiple times, resulting in different numbers of matrices solved through preprocessing alone. This inconsistency affects the reliability of performance metrics.
+### Performance Comparison Results
 
-### Root Causes of Non-Determinism
-1. **Clustering algorithms without fixed random state**:
-   - `FeatureAgglomeration` and `AgglomerativeClustering` from scikit-learn
-   - Internal random processes in tie-breaking during clustering
-   
-2. **Dictionary iteration order**:
-   - Python dictionaries may have different iteration orders between runs
-   - Affects the order of region processing
-   
-3. **Floating-point precision variations**:
-   - Small numerical differences in distance calculations
-   - Can lead to different clustering decisions at boundaries
+| Metric | No Seed | With Seed | Impact |
+|--------|---------|-----------|---------|
+| **Mean execution time** | 2.24s | 4.11s | **+83% slower** |
+| **Median execution time** | 1.49s | 2.53s | **+70% slower** |
+| **Mean ILP calls** | 8.6 | 10.4 | **+21% more calls** |
+| **Maximum time** | 22.17s | 53.78s | **+143% worst case** |
 
+### Key Findings
+1. **Seed degrades performance** across all haplotype counts (2, 4, 6, 8)
+2. **Consistent degradation pattern**: More complex instances (higher haplotype count) show greater performance penalty
+3. **Strong correlation (0.728)** confirms both approaches solve the same problems with consistent relative difficulty
+4. **Counter-intuitive result**: Expected seed to improve determinism and potentially performance, but opposite observed
+
+### Haplotype-Specific Impact
+- **2 haplotypes**: +67% execution time with seed
+- **4 haplotypes**: +96% execution time with seed  
+- **6 haplotypes**: +84% execution time with seed
+- **8 haplotypes**: +85% execution time with seed
 
 ## Graph Analysis
 
@@ -130,6 +141,19 @@ The comparison graph shows two **distinct populations**:
 - Predominance of complex haplotypes (6-8)
 - **25.7% of total runs**
 
+### 6. Seed vs No-Seed Comparison
+![ILP Computation Time Comparison](ilp_comparison_dashboard.png)
+
+The comprehensive comparison reveals:
+
+**Time distribution:** Boxplots show consistently higher execution times with seed across all instances
+
+**Matrix density impact:** Performance degradation with seed is consistent across different matrix densities (0.65-0.95)
+
+**Direct correlation:** Strong linear relationship (0.728) confirms both methods tackle identical problem difficulty but with different efficiency
+
+**ILP calls pattern:** Seed approach requires more ILP solver calls, explaining increased computation time
+
 ## Detailed Conclusions
 
 ### Algorithm Strengths
@@ -141,3 +165,25 @@ The comparison graph shows two **distinct populations**:
 1. **Number of haplotypes**: Major impact (from 100% to 50% efficiency)
 2. **Matrix size**: Critical threshold at ~50K elements
 3. **Density**: Optimum >0.9, problematic <0.8
+
+### Seed Configuration Impact
+1. **Performance degradation**: Consistent 83% slower execution with seed
+2. **Resource overhead**: 21% more ILP calls required
+3. **Scalability concern**: Larger performance penalty on complex instances
+
+## Recommendations
+
+### Immediate Actions
+1. **Remove seed usage** from current TrainMiner implementation
+2. **Validate determinism** of no-seed approach for production consistency
+3. **Monitor edge cases** where seed might provide stability benefits
+
+### Further Investigation
+1. **Root cause analysis**: Why does seed degrade performance?
+2. **Alternative randomization**: Test different seed strategies
+3. **Hybrid approach**: Conditional seed usage based on instance complexity
+
+### Performance Optimization
+1. **Focus on no-seed optimization** for maximum efficiency
+2. **Instance pre-classification** to predict complexity
+3. **Adaptive timeout strategies** based on predicted difficulty

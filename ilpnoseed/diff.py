@@ -4,55 +4,55 @@ import seaborn as sns
 import numpy as np
 
 def load_and_process_data(file1, file2):
-    """Charge et traite les données des deux fichiers CSV"""
+    """Load and process data from two CSV files"""
     
-    # Charger les données
+    # Load data
     df1 = pd.read_csv(file1)
     df2 = pd.read_csv(file2)
     
-    print(f"Colonnes disponibles dans {file1}: {list(df1.columns)}")
-    print(f"Colonnes disponibles dans {file2}: {list(df2.columns)}")
+    print(f"Available columns in {file1}: {list(df1.columns)}")
+    print(f"Available columns in {file2}: {list(df2.columns)}")
     
-    # Filtrer uniquement les données avec des appels ILP (ilp_calls_total > 0)
+    # Filter only data with ILP calls (ilp_calls_total > 0)
     df1_ilp = df1[df1['ilp_calls_total'] > 0].copy()
     df2_ilp = df2[df2['ilp_calls_total'] > 0].copy()
     
-    print(f"Données avec ILP dans {file1}: {len(df1_ilp)} / {len(df1)} instances")
-    print(f"Données avec ILP dans {file2}: {len(df2_ilp)} / {len(df2)} instances")
+    print(f"Data with ILP in {file1}: {len(df1_ilp)} / {len(df1)} instances")
+    print(f"Data with ILP in {file2}: {len(df2_ilp)} / {len(df2)} instances")
     
-    # Trouver les instances communes (basé sur filename)
+    # Find common instances (based on filename)
     common_files = set(df1_ilp['filename']) & set(df2_ilp['filename'])
-    print(f"Instances communes avec ILP: {len(common_files)}")
+    print(f"Common instances with ILP: {len(common_files)}")
     
-    # Filtrer pour ne garder que les instances communes
+    # Filter to keep only common instances
     df1_common = df1_ilp[df1_ilp['filename'].isin(common_files)].copy()
     df2_common = df2_ilp[df2_ilp['filename'].isin(common_files)].copy()
     
-    print(f"Instances finales - Sans seed: {len(df1_common)}")
-    print(f"Instances finales - Avec seed: {len(df2_common)}")
+    print(f"Final instances - No seed: {len(df1_common)}")
+    print(f"Final instances - With seed: {len(df2_common)}")
     
-    # Déterminer quelle colonne de temps utiliser
-    time_col1 = 'execution_time' if 'execution_time' in df1_common.columns else 'total_time'
-    time_col2 = 'execution_time' if 'execution_time' in df2_common.columns else 'total_time'
+    # Determine which time column to use
+    time_col1 = 'execution_time' if 'execution_time' in df1_common.columns else 'ilp_time_total'
+    time_col2 = 'execution_time' if 'execution_time' in df2_common.columns else 'ilp_time_total'
     
     if time_col1 not in df1_common.columns:
-        raise ValueError(f"Colonne '{time_col1}' manquante dans {file1}")
+        raise ValueError(f"Column '{time_col1}' missing in {file1}")
     if time_col2 not in df2_common.columns:
-        raise ValueError(f"Colonne '{time_col2}' manquante dans {file2}")
+        raise ValueError(f"Column '{time_col2}' missing in {file2}")
     
-    print(f"Utilisation de '{time_col1}' comme temps d'exécution pour {file1}")
-    print(f"Utilisation de '{time_col2}' comme temps d'exécution pour {file2}")
+    print(f"Using '{time_col1}' as execution time for {file1}")
+    print(f"Using '{time_col2}' as execution time for {file2}")
     
     return df1_common, df2_common, time_col1, time_col2
 
 def compare_execution_times(df1, df2, time_col1, time_col2, label1="Dataset 1", label2="Dataset 2"):
-    """Compare les temps d'exécution entre deux datasets"""
+    """Compare execution times between two datasets"""
     
-    # Créer une figure avec plusieurs sous-graphiques
-    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    fig.suptitle('Comparaison des temps de calcul ILP (instances communes)', fontsize=16)
+    # Create figure with multiple subplots
+    fig, axes = plt.subplots(2, 3, figsize=(20, 12))
+    fig.suptitle(f'ILP Computation Time Comparison - {len(df1)} Common Instances', fontsize=16)
     
-    # 1. Comparaison des temps moyens par nombre d'haplotypes
+    # 1. Average time comparison by haplotype count
     ax1 = axes[0, 0]
     if 'haplotype_count' in df1.columns and 'haplotype_count' in df2.columns:
         time_by_haplo1 = df1.groupby('haplotype_count')[time_col1].mean()
@@ -67,62 +67,121 @@ def compare_execution_times(df1, df2, time_col1, time_col2, label1="Dataset 1", 
         
         ax1.bar(x - width/2, times1, width, label=label1, alpha=0.8)
         ax1.bar(x + width/2, times2, width, label=label2, alpha=0.8)
-        ax1.set_xlabel('Nombre d\'haplotypes')
-        ax1.set_ylabel('Temps moyen (s)')
-        ax1.set_title('Temps moyen par nombre d\'haplotypes')
+        ax1.set_xlabel('Number of Haplotypes')
+        ax1.set_ylabel('Average Time (s)')
+        ax1.set_title('Average Time by Haplotype Count')
         ax1.set_xticks(x)
         ax1.set_xticklabels(haplos)
         ax1.legend()
     else:
-        ax1.text(0.5, 0.5, 'Colonne haplotype_count\nnon disponible', 
+        ax1.text(0.5, 0.5, 'Haplotype_count column\nnot available', 
                 ha='center', va='center', transform=ax1.transAxes)
     
-    # 2. Distribution des temps d'exécution
+    # 2. Execution time vs Matrix Density (line plot with bins)
     ax2 = axes[0, 1]
-    ax2.hist(df1[time_col1], bins=20, alpha=0.7, label=label1, density=True)
-    ax2.hist(df2[time_col2], bins=20, alpha=0.7, label=label2, density=True)
-    ax2.set_xlabel('Temps d\'exécution (s)')
-    ax2.set_ylabel('Densité')
-    ax2.set_title('Distribution des temps d\'exécution')
+    
+    # Create density bins and calculate average execution time
+    def calculate_time_by_density_bins(df, time_col, bin_size=0.005):
+        df_temp = df.copy()
+        # Create smaller density bins (e.g., 0.005 width instead of automatic)
+        min_density = df_temp['matrix_density'].min()
+        max_density = df_temp['matrix_density'].max()
+        bins = np.arange(min_density, max_density + bin_size, bin_size)
+        df_temp['density_bins'] = pd.cut(df_temp['matrix_density'], bins=bins)
+        grouped = df_temp.groupby('density_bins', observed=False).agg({
+            time_col: ['mean', 'count'],
+            'matrix_density': 'mean'
+        }).reset_index()
+        # Flatten column names
+        grouped.columns = ['density_bins', f'{time_col}_mean', f'{time_col}_count', 'matrix_density_mean']
+        # Only keep bins with at least 2 data points
+        return grouped[(grouped[f'{time_col}_mean'].notna()) & (grouped[f'{time_col}_count'] >= 2)]
+    
+    time_by_density1 = calculate_time_by_density_bins(df1, time_col1)
+    time_by_density2 = calculate_time_by_density_bins(df2, time_col2)
+    
+    if not time_by_density1.empty:
+        ax2.plot(time_by_density1['matrix_density_mean'], time_by_density1[f'{time_col1}_mean'], 
+                'o-', color='red', label=f'{label1} ({len(time_by_density1)} bins)', linewidth=2, markersize=6)
+    
+    if not time_by_density2.empty:
+        ax2.plot(time_by_density2['matrix_density_mean'], time_by_density2[f'{time_col2}_mean'], 
+                'o-', color='blue', label=f'{label2} ({len(time_by_density2)} bins)', linewidth=2, markersize=6)
+    
+    ax2.set_xlabel('Matrix Density')
+    ax2.set_ylabel('Average Execution Time (s)')
+    ax2.set_title('Average Execution Time vs Matrix Density')
     ax2.legend()
+    ax2.grid(True, alpha=0.3)
     
-    # 3. Boxplot comparatif
-    ax3 = axes[1, 0]
+    # 3. ILP calls comparison
+    ax3 = axes[0, 2]
+    merged_ilp = pd.merge(df1[['filename', 'ilp_calls_total']], 
+                         df2[['filename', 'ilp_calls_total']], 
+                         on='filename', 
+                         suffixes=('_1', '_2'))
+    
+    if not merged_ilp.empty:
+        ax3.scatter(merged_ilp['ilp_calls_total_1'], merged_ilp['ilp_calls_total_2'], alpha=0.6)
+        # y=x reference line
+        max_calls = max(merged_ilp['ilp_calls_total_1'].max(), merged_ilp['ilp_calls_total_2'].max())
+        ax3.plot([0, max_calls], [0, max_calls], 'r--', alpha=0.8)
+        ax3.set_xlabel(f'ILP Calls {label1}')
+        ax3.set_ylabel(f'ILP Calls {label2}')
+        ax3.set_title('ILP Calls Comparison')
+        
+        # Add correlation
+        correlation_ilp = merged_ilp['ilp_calls_total_1'].corr(merged_ilp['ilp_calls_total_2'])
+        ax3.text(0.05, 0.95, f'Correlation: {correlation_ilp:.3f}', 
+                transform=ax3.transAxes, bbox=dict(boxstyle="round", facecolor='lightblue'))
+    else:
+        ax3.text(0.5, 0.5, 'No common\ninstances', 
+                ha='center', va='center', transform=ax3.transAxes)
+    
+    # 4. Time boxplot comparison
+    ax4 = axes[1, 0]
     data_to_plot = [df1[time_col1], df2[time_col2]]
-    ax3.boxplot(data_to_plot, labels=[label1, label2])
-    ax3.set_ylabel('Temps d\'exécution (s)')
-    ax3.set_title('Comparaison des distributions (boxplot)')
+    ax4.boxplot(data_to_plot, labels=[label1, label2])
+    ax4.set_ylabel('Execution Time (s)')
+    ax4.set_title('Time Distribution Comparison (Boxplot)')
     
-    # 4. Scatter plot pour comparaison directe des instances communes
-    ax4 = axes[1, 1]
-    # Merger sur filename pour comparer les mêmes instances
+    # 5. ILP calls boxplot comparison
+    ax5 = axes[1, 1]
+    ilp_data_to_plot = [df1['ilp_calls_total'], df2['ilp_calls_total']]
+    ax5.boxplot(ilp_data_to_plot, labels=[label1, label2])
+    ax5.set_ylabel('Number of ILP Calls')
+    ax5.set_title('ILP Calls Comparison')
+    
+    # 6. Direct time comparison scatter plot
+    ax6 = axes[1, 2]
+    # Merge on filename to compare same instances
     merged = pd.merge(df1[['filename', time_col1]], 
                      df2[['filename', time_col2]], 
                      on='filename', 
                      suffixes=('_1', '_2'))
     
     if not merged.empty:
-        ax4.scatter(merged[f'{time_col1}_1'], merged[f'{time_col2}_2'], alpha=0.6)
-        # Ligne y=x pour référence
+        ax6.scatter(merged[f'{time_col1}_1'], merged[f'{time_col2}_2'], alpha=0.6)
+        # y=x reference line
         max_time = max(merged[f'{time_col1}_1'].max(), merged[f'{time_col2}_2'].max())
-        ax4.plot([0, max_time], [0, max_time], 'r--', alpha=0.8)
-        ax4.set_xlabel(f'Temps {label1} (s)')
-        ax4.set_ylabel(f'Temps {label2} (s)')
-        ax4.set_title('Comparaison directe (instances communes)')
+        ax6.plot([0, max_time], [0, max_time], 'r--', alpha=0.8)
+        ax6.set_xlabel(f'Time {label1} (s)')
+        ax6.set_ylabel(f'Time {label2} (s)')
+        ax6.set_title('Direct Time Comparison')
         
-        # Ajouter corrélation
+        # Add correlation
         correlation = merged[f'{time_col1}_1'].corr(merged[f'{time_col2}_2'])
-        ax4.text(0.05, 0.95, f'Corrélation: {correlation:.3f}', 
-                transform=ax4.transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
+        ax6.text(0.05, 0.95, f'Correlation: {correlation:.3f}', 
+                transform=ax6.transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
     else:
-        ax4.text(0.5, 0.5, 'Pas d\'instances\ncommunes trouvées', 
-                ha='center', va='center', transform=ax4.transAxes)
+        ax6.text(0.5, 0.5, 'No common\ninstances found', 
+                ha='center', va='center', transform=ax6.transAxes)
     
     plt.tight_layout()
     return fig
 
 def generate_statistics(df1, df2, time_col1, time_col2, label1="Dataset 1", label2="Dataset 2"):
-    """Génère des statistiques comparatives"""
+    """Generate comparative statistics"""
     
     stats = {
         label1: {
@@ -133,7 +192,10 @@ def generate_statistics(df1, df2, time_col1, time_col2, label1="Dataset 1", labe
             'min_time': df1[time_col1].min(),
             'max_time': df1[time_col1].max(),
             'q25': df1[time_col1].quantile(0.25),
-            'q75': df1[time_col1].quantile(0.75)
+            'q75': df1[time_col1].quantile(0.75),
+            'mean_ilp_calls': df1['ilp_calls_total'].mean(),
+            'median_ilp_calls': df1['ilp_calls_total'].median(),
+            'max_ilp_calls': df1['ilp_calls_total'].max()
         },
         label2: {
             'count': len(df2),
@@ -143,62 +205,62 @@ def generate_statistics(df1, df2, time_col1, time_col2, label1="Dataset 1", labe
             'min_time': df2[time_col2].min(),
             'max_time': df2[time_col2].max(),
             'q25': df2[time_col2].quantile(0.25),
-            'q75': df2[time_col2].quantile(0.75)
+            'q75': df2[time_col2].quantile(0.75),
+            'mean_ilp_calls': df2['ilp_calls_total'].mean(),
+            'median_ilp_calls': df2['ilp_calls_total'].median(),
+            'max_ilp_calls': df2['ilp_calls_total'].max()
         }
     }
     
     return pd.DataFrame(stats).round(4)
 
 def main():
-    """Fonction principale"""
+    """Main function"""
     
-    # Chemins vers vos fichiers CSV
-    file1 = "exp_no_seed.csv"  # Remplacez par le chemin de votre premier fichier
-    file2 = "experiment_results_20250613_190853.csv"  # Remplacez par le chemin de votre second fichier
+    # Paths to your CSV files
+    file1 = "exp_no_seed.csv"  # Replace with path to your first file
+    file2 = "experiment_results_20250613_190853.csv"  # Replace with path to your second file
     
     try:
-        # Charger les données
-        print("Chargement des données...")
+        # Load data
+        print("Loading data...")
         df1_ilp, df2_ilp, time_col1, time_col2 = load_and_process_data(file1, file2)
         
-        print(f"Sans seed: {len(df1_ilp)} instances")
-        print(f"Avec seed: {len(df2_ilp)} instances")
+        print(f"No seed: {len(df1_ilp)} instances")
+        print(f"With seed: {len(df2_ilp)} instances")
         
-        # Générer les statistiques
-        print("\n=== STATISTIQUES COMPARATIVES ===")
-        stats_df = generate_statistics(df1_ilp, df2_ilp, time_col1, time_col2, "Sans seed", "Avec seed")
+        # Generate statistics
+        print("\n=== COMPARATIVE STATISTICS ===")
+        stats_df = generate_statistics(df1_ilp, df2_ilp, time_col1, time_col2, "No seed", "With seed")
         print(stats_df)
         
-        # Créer les graphiques de comparaison
-        print("\nGénération des graphiques...")
-        fig = compare_execution_times(df1_ilp, df2_ilp, time_col1, time_col2, "Sans seed", "Avec seed")
+        # Create comparison plots
+        print("\nGenerating plots...")
+        fig = compare_execution_times(df1_ilp, df2_ilp, time_col1, time_col2, "No seed", "With seed")
         
-        # Sauvegarder les résultats
+        # Save results
         fig.savefig('comparison_ilp_times.png', dpi=300, bbox_inches='tight')
         stats_df.to_csv('comparison_statistics.csv')
         
-        print("Comparaison terminée!")
-        print("- Graphiques sauvegardés: comparison_ilp_times.png")
-        print("- Statistiques sauvegardées: comparison_statistics.csv")
+        print("Comparison completed!")
+        print("- Plots saved: comparison_ilp_times.png")
+        print("- Statistics saved: comparison_statistics.csv")
         
-        # Afficher les graphiques
-        plt.show()
-        
-        # Analyse rapide
-        print("\n=== ANALYSE RAPIDE ===")
-        ratio_mean = stats_df.loc['mean_time', 'Avec seed'] / stats_df.loc['mean_time', 'Sans seed']
-        print(f"Ratio temps moyen (Avec seed / Sans seed): {ratio_mean:.2f}")
+        # Quick analysis
+        print("\n=== QUICK ANALYSIS ===")
+        ratio_mean = stats_df.loc['mean_time', 'With seed'] / stats_df.loc['mean_time', 'No seed']
+        print(f"Mean time ratio (With seed / No seed): {ratio_mean:.2f}")
         
         if ratio_mean > 1:
-            print(f"ILP avec seed est {ratio_mean:.2f}x plus lent en moyenne")
+            print(f"ILP with seed is {ratio_mean:.2f}x slower on average")
         else:
-            print(f"ILP avec seed est {1/ratio_mean:.2f}x plus rapide en moyenne")
+            print(f"ILP with seed is {1/ratio_mean:.2f}x faster on average")
         
     except FileNotFoundError as e:
-        print(f"Erreur: Fichier non trouvé - {e}")
-        print("Assurez-vous que les chemins vers vos fichiers CSV sont corrects")
+        print(f"Error: File not found - {e}")
+        print("Make sure the paths to your CSV files are correct")
     except Exception as e:
-        print(f"Erreur: {e}")
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
