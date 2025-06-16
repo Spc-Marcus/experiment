@@ -14,9 +14,9 @@ if __name__ == "__main__":
     parent_dir = current_dir.parent
     sys.path.insert(0, str(parent_dir))
     
-    # Now import with absolute paths
-    from ilphaplo.get_data import get_data
-    from ilphaplo.pipeline import run_pipeline
+    # Import from local ilpnoseed module instead of ilphaplo
+    from ilpnoseed.get_data import get_data
+    from ilpnoseed.pipeline import run_pipeline
 else:
     # Relative imports for when imported as module
     from .get_data import get_data
@@ -148,9 +148,106 @@ def extract_haplotype_count(filepath: str) -> int:
     # Default to 0 if no haplotype count found (will be handled gracefully)
     return 0
 
-def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
+def print_comparison_summary(comparison_summary: List[Dict[str, Any]]):
+    """Print detailed comparison summary with new metrics."""
+    
+    if not comparison_summary:
+        return
+    
+    print(f"\n🔍 COMPARISON SUMMARY:")
+    print(f"Total files compared: {len(comparison_summary)}")
+    
+    # Basic success rates
+    both_success = sum(1 for c in comparison_summary if c['results_identical'] is not None)
+    identical_count = sum(1 for c in comparison_summary if c.get('results_identical', False))
+    equivalent_count = sum(1 for c in comparison_summary if c.get('results_equivalent', False))
+    
+    print(f"Both versions succeeded: {both_success}/{len(comparison_summary)}")
+    print(f"Identical results: {identical_count}/{both_success}")
+    print(f"Equivalent results: {equivalent_count}/{both_success}")
+    
+    if both_success > 0:
+        avg_noseed_time = np.mean([c['noseed_time'] for c in comparison_summary if c.get('noseed_time', 0) > 0])
+        avg_seed_time = np.mean([c['seed_time'] for c in comparison_summary if c.get('seed_time', 0) > 0])
+        print(f"Average time - NOSEED: {avg_noseed_time:.3f}s, SEED: {avg_seed_time:.3f}s")
+    
+    # NEW: Detailed cluster metrics summary
+    detailed_comparisons = [c for c in comparison_summary if 'detailed_metrics' in c]
+    if detailed_comparisons:
+        print(f"\n=== DETAILED CLUSTER ANALYSIS ===")
+        
+        total_exchanged = sum(c['detailed_metrics'].get('reads_exchanged', 0) for c in detailed_comparisons)
+        total_unique_noseed = sum(c['detailed_metrics'].get('reads_unique_noseed', 0) for c in detailed_comparisons)
+        total_unique_seed = sum(c['detailed_metrics'].get('reads_unique_seed', 0) for c in detailed_comparisons)
+        total_assignment_changes = sum(c['detailed_metrics'].get('read_assignment_changes', 0) for c in detailed_comparisons)
+        
+        avg_stability = np.mean([c['detailed_metrics'].get('cluster_stability_score', 1.0) for c in detailed_comparisons])
+        
+        print(f"Total reads exchanged between clusters: {total_exchanged}")
+        print(f"Total reads unique to NOSEED: {total_unique_noseed}")
+        print(f"Total reads unique to SEED: {total_unique_seed}")
+        print(f"Total read assignment changes: {total_assignment_changes}")
+        print(f"Average cluster stability score: {avg_stability:.3f}")
+        
+        # Perfect vs partial matches
+        perfect_matches = sum(c['detailed_metrics'].get('perfect_cluster_matches', 0) for c in detailed_comparisons)
+        partial_matches = sum(c['detailed_metrics'].get('partial_cluster_matches', 0) for c in detailed_comparisons)
+        different_clusters = sum(c['detailed_metrics'].get('completely_different_clusters', 0) for c in detailed_comparisons)
+        
+        print(f"Perfect cluster matches across all files: {perfect_matches}")
+        print(f"Partial cluster matches across all files: {partial_matches}")
+        print(f"Completely different clusters across all files: {different_clusters}")
+        
+        # Files with significant differences
+        significant_diffs = [c for c in detailed_comparisons 
+                           if c['detailed_metrics'].get('reads_exchanged', 0) > 0 
+                           or c['detailed_metrics'].get('cluster_stability_score', 1.0) < 0.9]
+        
+        if significant_diffs:
+            print(f"\n=== FILES WITH SIGNIFICANT DIFFERENCES ({len(significant_diffs)}) ===")
+            for comp in significant_diffs:
+                metrics = comp['detailed_metrics']
+                print(f"  {comp['filename']}:")
+                print(f"    Reads exchanged: {metrics.get('reads_exchanged', 0)}")
+                print(f"    Stability score: {metrics.get('cluster_stability_score', 1.0):.3f}")
+                print(f"    Assignment changes: {metrics.get('read_assignment_changes', 0)}")
+        
+        # Time analysis
+        time_differences = []
+        for c in detailed_comparisons:
+            noseed_time = c.get('noseed_time', 0)
+            seed_time = c.get('seed_time', 0)
+            if noseed_time > 0 and seed_time > 0:
+                ratio = max(noseed_time, seed_time) / min(noseed_time, seed_time)
+                time_differences.append({
+                    'filename': c['filename'],
+                    'noseed_time': noseed_time,
+                    'seed_time': seed_time,
+                    'ratio': ratio
+                })
+        
+        if time_differences:
+            avg_ratio = np.mean([td['ratio'] for td in time_differences])
+            print(f"\n=== EXECUTION TIME ANALYSIS ===")
+            print(f"Average time ratio (slower/faster): {avg_ratio:.2f}")
+            
+            significant_time_diffs = [td for td in time_differences if td['ratio'] > 2.0]
+            if significant_time_diffs:
+                print(f"Files with >2x time difference ({len(significant_time_diffs)}):")
+                for td in significant_time_diffs:
+                    faster = "NOSEED" if td['noseed_time'] < td['seed_time'] else "SEED"
+                    print(f"  {td['filename']}: {td['ratio']:.1f}x ({faster} faster)")
+
+def process_all_matrices(base_dir: str = None, enable_comparison: bool = False) -> List[Dict[str, Any]]:
     """
     Process all CSV matrices and collect statistics.
+    
+    Parameters
+    ----------
+    base_dir : str, optional
+        Base directory containing matrices
+    enable_comparison : bool, optional
+        If True, compare noseed vs seed versions
     """
     
     results = []
@@ -168,6 +265,8 @@ def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
             return results
     
     print(f"Using matrice directory: {base_path.resolve()}")
+    if enable_comparison:
+        print("🔍 COMPARISON MODE ENABLED - Will compare noseed vs seed versions")
     
     # Find all CSV files in directory and subdirectories
     csv_files = list(base_path.rglob("*.csv"))
@@ -179,6 +278,8 @@ def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
         print("Please check that your data files are in the correct location:")
         print(f"  {base_path.resolve()}")
         return results
+    
+    comparison_summary = []
     
     for i, csv_file in enumerate(csv_files):
         try:
@@ -195,16 +296,59 @@ def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
             # Convert to binary matrix (ensure 0/1 values)
             binary_matrix = df.values.astype(int)
             
-            # Run pipeline and collect statistics
-            # NOUVEAU: Passer le nom du fichier et le nombre d'haplotypes
-            pipeline_results = run_pipeline(
-                binary_matrix,
-                min_col_quality=3,
-                min_row_quality=5,
-                error_rate=0.025,
-                filename=csv_file.name,
-                haplotype_count=haplotype_count
-            )
+            # Run pipeline with optional comparison
+            try:
+                pipeline_results = run_pipeline(
+                    binary_matrix,
+                    min_col_quality=3,
+                    min_row_quality=5,
+                    error_rate=0.025,
+                    filename=csv_file.name,
+                    haplotype_count=haplotype_count,
+                    enable_comparison=enable_comparison
+                )
+            except Exception as pipeline_error:
+                print(f"  -> Pipeline error: {str(pipeline_error)}")
+                # Create minimal pipeline results for error case
+                pipeline_results = {
+                    'ilp_calls_total': 0,
+                    'preprocessing_time': 0,
+                    'clustering_time': 0,
+                    'total_time': 0,
+                    'ilp_time_total': 0,
+                    'ilp_time_ratio': 0,
+                    'avg_ilp_time': 0,
+                    'patterns_found': 0,
+                    'regions_found': 0,
+                    'clustering_steps': 0,
+                    'regions_processed': 0,
+                    'matrix_operations': 0,
+                    'avg_region_size': 0,
+                    'largest_region': 0,
+                    'smallest_region': 0,
+                    'solver_status_counts': {}
+                }
+            
+            # Process comparison results if available
+            if enable_comparison and 'comparison' in pipeline_results:
+                comparison = pipeline_results['comparison']
+                comp_summary = {
+                    'filename': csv_file.name,
+                    'noseed_success': comparison.get('noseed_success', False),
+                    'seed_success': comparison.get('seed_success', False),
+                    'results_identical': comparison.get('clustering_identical', False),
+                    'results_equivalent': comparison.get('clustering_equivalent', False),
+                    'noseed_steps': comparison.get('noseed_steps', 0),
+                    'seed_steps': comparison.get('seed_steps', 0),
+                    'noseed_time': comparison.get('noseed_time', 0),
+                    'seed_time': comparison.get('seed_time', 0)
+                }
+                
+                # Add detailed metrics if available
+                if 'detailed_metrics' in comparison:
+                    comp_summary['detailed_metrics'] = comparison['detailed_metrics']
+                
+                comparison_summary.append(comp_summary)
             
             # Compile comprehensive statistics
             stats = {
@@ -262,6 +406,34 @@ def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
                 'matrix_complexity': binary_matrix.shape[0] * binary_matrix.shape[1] * pipeline_results.get('matrix_density', 0),
             }
             
+            # Add comparison results if available
+            if enable_comparison and 'comparison' in pipeline_results:
+                comparison = pipeline_results['comparison']
+                stats.update({
+                    'comparison_enabled': True,
+                    'noseed_success': comparison.get('noseed_success', False),
+                    'seed_success': comparison.get('seed_success', False),
+                    'results_identical': comparison.get('clustering_identical', False),
+                    'results_equivalent': comparison.get('clustering_equivalent', False),
+                    'noseed_steps': comparison.get('noseed_steps', 0),
+                    'seed_steps': comparison.get('seed_steps', 0),
+                    'step_differences_count': len(comparison.get('step_differences', []))
+                })
+                
+                # Add detailed metrics
+                if 'detailed_metrics' in comparison:
+                    detailed = comparison['detailed_metrics']
+                    stats.update({
+                        'reads_exchanged': detailed.get('reads_exchanged', 0),
+                        'reads_unique_noseed': detailed.get('reads_unique_noseed', 0),
+                        'reads_unique_seed': detailed.get('reads_unique_seed', 0),
+                        'read_assignment_changes': detailed.get('read_assignment_changes', 0),
+                        'cluster_stability_score': detailed.get('cluster_stability_score', 1.0),
+                        'perfect_cluster_matches': detailed.get('perfect_cluster_matches', 0),
+                        'partial_cluster_matches': detailed.get('partial_cluster_matches', 0),
+                        'completely_different_clusters': detailed.get('completely_different_clusters', 0)
+                    })
+            
             # Add solver status counts if available
             solver_stats = pipeline_results.get('solver_status_counts', {})
             stats.update({
@@ -272,6 +444,11 @@ def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
             
             results.append(stats)
             print(f"  -> Completed: {stats['ilp_calls_total']} ILP calls, {stats['patterns_found']} patterns, {stats['total_time']:.3f}s")
+            
+            if enable_comparison and 'comparison' in pipeline_results:
+                comp = pipeline_results['comparison']
+                print(f"  -> Comparison: NOSEED({comp.get('noseed_steps', 0)} steps), SEED({comp.get('seed_steps', 0)} steps), "
+                      f"Identical: {comp.get('clustering_identical', False)}, Equivalent: {comp.get('clustering_equivalent', False)}")
             
         except Exception as e:
             print(f"  -> Error processing {csv_file}: {str(e)}")
@@ -288,6 +465,10 @@ def process_all_matrices(base_dir: str = None) -> List[Dict[str, Any]]:
                 'patterns_found': 0
             }
             results.append(error_stats)
+    
+    # Print enhanced comparison summary
+    if enable_comparison and comparison_summary:
+        print_comparison_summary(comparison_summary)
     
     return results
 
@@ -335,21 +516,32 @@ def save_results_to_csv(results: List[Dict[str, Any]], output_file: str = "exper
                   f"avg time: {hap_df['total_time'].mean():.2f}s, "
                   f"efficiency: {efficiency_rate:.1f}%")
 
-def run_experiments():
+def run_experiments(enable_comparison: bool = False):
     """Main function to run all experiments."""
     
     print("Starting matrix processing experiments...")
+    if enable_comparison:
+        print("🔍 Comparison mode enabled - will compare noseed vs seed versions")
     print(f"Working directory: {os.getcwd()}")
     
-    # Process all matrices - don't specify base_dir to trigger auto-discovery
-    results = process_all_matrices()
+    # Process all matrices
+    results = process_all_matrices(enable_comparison=enable_comparison)
     
     # Save results
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     output_file = f"experiment_results_{timestamp}.csv"
+    if enable_comparison:
+        output_file = f"comparison_experiment_results_{timestamp}.csv"
+    
     save_results_to_csv(results, output_file)
     
     return results
 
 if __name__ == "__main__":
-    results = run_experiments()
+    # Check for comparison flag in command line arguments
+    enable_comparison = '--compare' in sys.argv or '-c' in sys.argv
+    
+    if enable_comparison:
+        print("🔍 Comparison mode activated via command line")
+    
+    results = run_experiments(enable_comparison=enable_comparison)

@@ -1,12 +1,12 @@
 ,No seed,With seed
-count,1057.0,1057.0
-mean_time,2.2434,4.1107
-median_time,1.491,2.5341
-std_time,2.1581,4.4474
-min_time,0.1818,0.3374
-max_time,22.1696,53.7816
-q25,1.1365,1.3535
-q75,2.6314,5.0623
-mean_ilp_calls,8.5979,10.4049
-median_ilp_calls,5.0,7.0
-max_ilp_calls,62.0,69.0
+count,1059.0,1059.0
+mean_time,4.0312,1.7621
+median_time,2.7813,1.1734
+std_time,4.0405,1.8283
+min_time,0.3058,0.1216
+max_time,53.4456,16.5462
+q25,1.3629,0.6351
+q75,5.2357,2.259
+mean_ilp_calls,12.9868,13.0482
+median_ilp_calls,10.0,10.0
+max_ilp_calls,69.0,67.0

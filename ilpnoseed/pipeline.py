@@ -63,7 +63,8 @@ def run_pipeline(binary_matrix: np.ndarray,
                 min_row_quality: int = 5,
                 error_rate: float = 0.025,
                 filename: str = "unknown",
-                haplotype_count: int = 0) -> Dict[str, Any]:
+                haplotype_count: int = 0,
+                enable_comparison: bool = False) -> Dict[str, Any]:
     """
     Execute complete preprocessing and clustering pipeline on binary matrix.
     
@@ -81,6 +82,8 @@ def run_pipeline(binary_matrix: np.ndarray,
         Original filename for logging (default: "unknown")
     haplotype_count : int, optional
         Number of haplotypes for organization (default: 0)
+    enable_comparison : bool, optional
+        If True, run comparison with seed version (default: False)
         
     Returns
     -------
@@ -95,21 +98,61 @@ def run_pipeline(binary_matrix: np.ndarray,
             min_col_quality=min_col_quality
         )
         
-        # Phase 2: Clustering (tracked automatically)
-        # NOUVEAU: Passer filename et haplotype_count
-        final_steps = clustering_full_matrix(
-            matrix,
-            regions=inhomogeneous_regions,
-            steps=steps,
-            min_row_quality=min_row_quality,
-            min_col_quality=min_col_quality,
-            error_rate=error_rate,
-            filename=filename,
-            haplotype_count=haplotype_count
-        )
-        
-        # Get comprehensive results from tracker
-        results = tracker.get_results()
+        # Phase 2: Clustering with optional comparison
+        if enable_comparison:
+            print(f"\n🔍 COMPARISON MODE ENABLED for {filename}")
+            
+            # Import comparison module
+            try:
+                from .comparison import compare_clustering_results
+                
+                # Run comparison
+                comparison_results = compare_clustering_results(
+                    input_matrix=matrix,
+                    regions=inhomogeneous_regions,
+                    steps=steps,
+                    min_row_quality=min_row_quality,
+                    min_col_quality=min_col_quality,
+                    error_rate=error_rate,
+                    filename=filename,
+                    haplotype_count=haplotype_count,
+                    verbose=True
+                )
+                
+                # Use noseed result (current implementation) - CORRIGER ICI
+                final_steps = comparison_results['noseed_clustering_result']
+                
+                # Add comparison results to output
+                results = tracker.get_results()
+                results['comparison'] = comparison_results
+                
+            except ImportError as e:
+                print(f"⚠️  Comparison not available: {e}")
+                # Fallback to normal clustering
+                final_steps = clustering_full_matrix(
+                    matrix,
+                    regions=inhomogeneous_regions,
+                    steps=steps,
+                    min_row_quality=min_row_quality,
+                    min_col_quality=min_col_quality,
+                    error_rate=error_rate,
+                    filename=filename,
+                    haplotype_count=haplotype_count
+                )
+                results = tracker.get_results()
+        else:
+            # Normal clustering (no comparison)
+            final_steps = clustering_full_matrix(
+                matrix,
+                regions=inhomogeneous_regions,
+                steps=steps,
+                min_row_quality=min_row_quality,
+                min_col_quality=min_col_quality,
+                error_rate=error_rate,
+                filename=filename,
+                haplotype_count=haplotype_count
+            )
+            results = tracker.get_results()
         
         # Add additional computed metrics
         results.update({

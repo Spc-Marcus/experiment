@@ -218,8 +218,8 @@ def main():
     """Main function"""
     
     # Paths to your CSV files
-    file1 = "exp_no_seed.csv"  # Replace with path to your first file
-    file2 = "experiment_results_20250613_190853.csv"  # Replace with path to your second file
+    file1 = "experiment_results_noseed2.csv"  # Replace with path to your first file
+    file2 = "experiment_results_seed.csv"  # Replace with path to your second file
     
     try:
         # Load data

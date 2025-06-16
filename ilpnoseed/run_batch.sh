@@ -103,7 +103,7 @@ fi
 # Run the experiment - use correct path to Python script
 echo ""
 echo "Running experiment script..."
-if python ilpnoseed/run_experiments.py "$found_dir"; then
+if python ilpnoseed/run_experiments.py --compare; then
     echo "✅ Experiment script completed successfully!"
 else
     echo "❌ Experiment script failed"
