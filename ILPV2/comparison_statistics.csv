@@ -1,0 +1,12 @@
+,max_one_comp,MaxOne
+count,1059.0,1059.0
+mean_time,2.2188,2.0945
+median_time,1.481,1.384
+std_time,2.4189,2.3298
+min_time,0.1855,0.1775
+max_time,23.2096,21.8197
+q25,0.7609,0.7448
+q75,2.8056,2.6672
+mean_ilp_calls,13.0482,13.0482
+median_ilp_calls,10.0,10.0
+max_ilp_calls,67.0,67.0
