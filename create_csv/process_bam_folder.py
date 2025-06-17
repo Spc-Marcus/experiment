@@ -172,7 +172,7 @@ def process_bam_folder(bam_folder: Path, output_folder: Path,
     print(f"Found {len(bam_files)} BAM files to process")
     
     # Create output directory structure
-    matrices_dir = output_folder / f"matrices_no_binarize_{filtered_col_threshold}"
+    matrices_dir = output_folder / f"matrices_no_binarize"
     matrices_dir.mkdir(parents=True, exist_ok=True)
     
     successful = 0
