@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Starting batch processing of target matrices..."
+echo "🔍 Starting batch processing of target matrices for density constraint validation..."
 echo "Working directory: $(pwd)"
 
 # Set Python path to include experiment directory
@@ -9,26 +9,26 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)/.."
 # Check for target files list
 target_file="filepaths_with_ilp_calls.txt"
 if [ ! -f "$target_file" ]; then
-    echo "Error: Target files list not found at $target_file"
-    echo "Please ensure filepaths_with_ilp_calls.txt exists in the ilphaplo directory"
+    echo "❌ Error: Target files list not found at $target_file"
+    echo "Please ensure filepaths_with_ilp_calls.txt exists in the current directory"
     exit 1
 fi
 
 target_count=$(wc -l < "$target_file")
-echo "Found target files list with $target_count files to process"
+echo "📋 Found target files list with $target_count files to process"
 
 # Check for matrices directory
 found_dir=""
 for matrices_path in "../matrices" "matrices" "./matrices"; do
     if [ -d "$matrices_path" ]; then
-        echo "Found matrices directory: $matrices_path"
+        echo "📁 Found matrices directory: $matrices_path"
         found_dir="$matrices_path"
         break
     fi
 done
 
 if [ -z "$found_dir" ]; then
-    echo "No matrices directory found"
+    echo "❌ No matrices directory found"
     echo "Expected locations: ../matrices, matrices, ./matrices"
     exit 1
 fi
@@ -42,97 +42,79 @@ for file in "${sample_files[@]}"; do
     fi
 done
 
-echo "Verified $found_samples out of 5 sample target files exist in $found_dir"
+echo "✅ Verified $found_samples out of 5 sample target files exist in $found_dir"
 
 if [ $found_samples -eq 0 ]; then
-    echo "Warning: No sample target files found in matrices directory"
+    echo "⚠️  Warning: No sample target files found in matrices directory"
     echo "Please check that the file paths in filepaths_with_ilp_calls.txt match the matrices directory structure"
 fi
 
-# Run the experiment - use correct path to Python script
+# Run the density constraint validation experiment
 echo ""
-echo "Running density constraint validation experiment..."
-if python ilphaplo/run_experiments.py "$found_dir"; then
-    echo "✅ Experiment script completed successfully!"
+echo "🚀 Running density constraint validation experiment..."
+echo "Processing $target_count matrices to check for density violations..."
+
+if python run_experiments.py "$found_dir"; then
+    echo "✅ Density validation experiment completed successfully!"
 else
-    echo "❌ Experiment script failed"
+    echo "❌ Density validation experiment failed"
     exit 1
 fi
 
-# Check if results were generated
-if ls experiment_results_*.csv 1> /dev/null 2>&1; then
-    latest_result=$(ls -t experiment_results_*.csv | head -n1)
-    echo "Experiments completed. Results saved to: $latest_result"
-    
-    # Show constraint validation summary
-    constraint_files=$(ls constraint_violations_*.csv 2>/dev/null || true)
-    if [ -n "$constraint_files" ]; then
-        latest_violations=$(ls -t constraint_violations_*.csv | head -n1)
-        echo "Constraint violations logged to: $latest_violations"
-        violation_count=$(tail -n +2 "$latest_violations" | wc -l)
-        echo "Total constraint violations found: $violation_count"
-    else
-        echo "✅ No constraint violations found - all zones satisfy density constraints"
-    fi
-    
-    # Run analysis if analyze_results.py exists
-    if [ -f "ilphaplo/analyze_results.py" ]; then
-        echo "Running analysis..."
-        python ilphaplo/analyze_results.py "$latest_result" --plots
-        echo "Analysis completed. Check the plots/ directory for visualizations."
-    else
-        echo "Analysis script not found, skipping visualization step."
-        echo "You can run analysis manually with:"
-        echo "python ilphaplo/analyze_results.py $latest_result --plots"
-    fi
-else
-    echo "Error: No results file found"
-    exit 1
-fi
+# Check if constraint violations were found
+constraint_files=$(ls constraint_violations_*.csv 2>/dev/null || true)
+if [ -n "$constraint_files" ]; then
+    latest_violations=$(ls -t constraint_violations_*.csv | head -n1)
     echo ""
-    echo "Please ensure matrices are available in numbered subdirectories"
-    exit 1
+    echo "⚠️  CONSTRAINT VIOLATIONS DETECTED!"
+    echo "📋 Violations logged to: $latest_violations"
+    
+    violation_count=$(tail -n +2 "$latest_violations" | wc -l)
+    echo "🔢 Total constraint violations found: $violation_count"
+    
+    # Count unique problematic matrices
+    matrices_list=$(ls constraint_violations_*_matrices_list.txt 2>/dev/null | head -n1)
+    if [ -f "$matrices_list" ]; then
+        matrix_count=$(wc -l < "$matrices_list")
+        echo "🔴 Matrices with violations: $matrix_count out of $target_count"
+        echo "📄 List of problematic matrices: $matrices_list"
+        
+        # Show first few problematic matrices
+        echo ""
+        echo "🔍 First 5 problematic matrices:"
+        head -5 "$matrices_list"
+        if [ $matrix_count -gt 5 ]; then
+            echo "... and $((matrix_count - 5)) more"
+        fi
+    fi
+    
+    # Check if experiment results were generated (only for problematic matrices)
+    if ls experiment_results_*.csv 1> /dev/null 2>&1; then
+        latest_result=$(ls -t experiment_results_*.csv | head -n1)
+        echo "📊 Detailed analysis of problematic matrices: $latest_result"
+    fi
+else
+    echo ""
+    echo "🎉 PERFECT RESULT!"
+    echo "✅ No constraint violations found - all zones satisfy density constraints"
+    echo "🎯 All $target_count matrices passed density validation"
+    echo "ℹ️  No results file created (no problematic matrices to report)"
 fi
 
-if [ $csv_count -eq 0 ]; then
-    echo "Warning: No CSV files found in matrix directories"
-    echo "Please ensure your data files have .csv extension"
-    exit 1
-fi
-
-# Run the experiment - use correct path to Python script
 echo ""
-echo "Running experiment script..."
-if python ilphaplo/run_experiments.py "$found_dir"; then
-    echo "✅ Experiment script completed successfully!"
+echo "📝 Summary:"
+echo "   - Total matrices processed: $target_count"
+if [ -n "$constraint_files" ]; then
+    violation_matrices=$(wc -l < "$matrices_list" 2>/dev/null || echo "0")
+    clean_matrices=$((target_count - violation_matrices))
+    echo "   - Clean matrices (no violations): $clean_matrices"
+    echo "   - Problematic matrices: $violation_matrices"
+    echo "   - Success rate: $(( clean_matrices * 100 / target_count ))%"
 else
-    echo "❌ Experiment script failed"
-    exit 1
+    echo "   - Clean matrices (no violations): $target_count"
+    echo "   - Problematic matrices: 0"
+    echo "   - Success rate: 100%"
 fi
 
-# Check if results were generated
-if ls experiment_results_*.csv 1> /dev/null 2>&1; then
-    latest_result=$(ls -t experiment_results_*.csv | head -n1)
-    echo "Experiments completed. Results saved to: $latest_result"
-    
-    # Show first few lines of results for verification
-    echo ""
-    echo "=== FIRST FEW RESULTS ==="
-    head -n 3 "$latest_result"
-    echo ""
-    
-    # Run analysis if analyze_results.py exists
-    if [ -f "ilphaplo/analyze_results.py" ]; then
-        echo "Running analysis..."
-        python ilphaplo/analyze_results.py "$latest_result" --plots
-        echo "Analysis completed. Check the plots/ directory for visualizations."
-    else
-        echo "Analysis script not found, skipping visualization step."
-        echo "You can run analysis manually with:"
-        echo "python ilphaplo/analyze_results.py $latest_result --plots"
-    fi
-else
-    echo "Error: No results file found"
-    echo "Check the console output above for error details"
-    exit 1
-fi
+echo ""
+echo "🏁 Density constraint validation completed!"
