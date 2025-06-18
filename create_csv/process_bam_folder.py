@@ -58,15 +58,10 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
             
             print(f"Found {len(contigs)} contigs in {bam_name}")
             
-            # Process only first few contigs to avoid hanging
-            max_contigs = 10  # Limit for testing
+            # Process ALL contigs (removed testing limit)
             processed_contigs = 0
             
             for contig_name, contig_length in zip(contigs, contig_lengths):
-                if processed_contigs >= max_contigs:
-                    print(f"  Stopping after {max_contigs} contigs for testing...")
-                    break
-                    
                 print(f"  Processing contig {contig_name} (length: {contig_length:,} bp)")
                 
                 # Skip small contigs entirely
@@ -82,9 +77,9 @@ def process_single_bam(bam_file_path: Path, output_base_dir: Path,
                 # Process entire contig in 5000 bp windows
                 start_pos = 0
                 window_count = 0
-                max_windows = 1000  # Increase limit for large contigs
+                # Removed max_windows limit - process entire contig
                 
-                while start_pos < contig_length and window_count < max_windows:
+                while start_pos < contig_length:
                     end_pos = min(start_pos + contig_window_size, contig_length)
                     
                     print(f"    Processing window {window_count+1}: {start_pos}-{end_pos}")
