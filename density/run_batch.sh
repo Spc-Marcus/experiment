@@ -54,7 +54,7 @@ echo ""
 echo "🚀 Running density constraint validation experiment..."
 echo "Processing $target_count matrices to check for density violations..."
 
-if python run_experiments.py "$found_dir"; then
+if python density/run_experiments.py "$found_dir"; then
     echo "✅ Density validation experiment completed successfully!"
 else
     echo "❌ Density validation experiment failed"
