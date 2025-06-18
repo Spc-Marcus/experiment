@@ -13,20 +13,29 @@ echo "🚀 StrainMiner - Sequential Pipeline"
 echo "==================================="
 
 # Step 1: Create CSV
-echo "=== Step 1: Creating CSV Matrices ==="
-if python create_csv/process_bam_folder.py bam .; then
-    echo "✅ CSV creation completed successfully!"
-else
-    echo "❌ CSV creation failed"
-    exit 1
-fi
+#echo "=== Step 1: Creating CSV Matrices ==="
+#if python create_csv/process_bam_folder.py bam .; then
+#    echo "✅ CSV creation completed successfully!"
+#else
+#    echo "❌ CSV creation failed"
+#    exit 1
+#fi
 
 # Step 2: KNN
-echo "=== Step 2: KNN Imputation ==="
-if python Knn/impute_matrices.py matrices_no_binarize; then
-    echo "✅ KNN imputation completed successfully!"
-    echo "Matrices saved in: matrices/"
+#echo "=== Step 2: KNN Imputation ==="
+#if python Knn/impute_matrices.py matrices_no_binarize; then
+#    echo "✅ KNN imputation completed successfully!"
+#    echo "Matrices saved in: matrices/"
+#else
+#    echo "❌ KNN imputation failed"
+#    exit 1
+#fi
+
+# Step 3: ilp
+echo "=== Step 3: ILP Optimization ==="
+if python ilphaplo/run_batch.py; then
+    echo "✅ ILP optimization completed successfully!"
 else
-    echo "❌ KNN imputation failed"
+    echo "❌ ILP optimization failed"
     exit 1
 fi
