@@ -33,7 +33,7 @@ echo "==================================="
 
 # Step 3: ilp
 echo "=== Step 3: ILP Optimization ==="
-if python ilphaplo/run_batch.sh; then
+if bash ilphaplo/run_batch.sh; then
     echo "✅ ILP optimization completed successfully!"
 else
     echo "❌ ILP optimization failed"
