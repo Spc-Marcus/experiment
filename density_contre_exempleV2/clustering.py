@@ -9,8 +9,7 @@ import contextlib
 from io import StringIO
 from pathlib import Path
 import json
-# Import max_e_r functions
-from max_e_r import max_e_r, max_e_wr
+
 # Fix decorator imports with multiple fallback attempts
 try:
     from ..decorators.ilp_tracker import track_clustering, track_ilp_call
@@ -109,8 +108,8 @@ def log_quasi_biclique_result(matrix: np.ndarray, rows: List[int], cols: List[in
     result = {
         "phase": phase,
         "input_shape": list(matrix.shape),
-        "selected_rows": [int(r) for r in rows],  # Convert to int
-        "selected_cols": [int(c) for c in cols],  # Convert to int
+        "selected_rows": rows,
+        "selected_cols": cols,
         "success": success,
         "selected_area": len(rows) * len(cols) if rows and cols else 0,
         "timestamp": time.strftime("%H:%M:%S")
@@ -127,7 +126,7 @@ def log_quasi_biclique_result(matrix: np.ndarray, rows: List[int], cols: List[in
         for i, row_idx in enumerate(rows):
             for j, col_idx in enumerate(cols):
                 if selected_matrix[i, j] == 0:
-                    zeros_positions.append([int(row_idx), int(col_idx)])  # Convert to int
+                    zeros_positions.append([row_idx, col_idx])
         
         result["zeros_positions"] = zeros_positions
         result["zeros_positions_count"] = len(zeros_positions)
@@ -139,7 +138,7 @@ def log_quasi_biclique_result(matrix: np.ndarray, rows: List[int], cols: List[in
             for i, row_idx in enumerate(rows):
                 for j, col_idx in enumerate(cols):
                     if selected_matrix[i, j] == -1:
-                        minus_ones_positions.append([int(row_idx), int(col_idx)])  # Convert to int
+                        minus_ones_positions.append([row_idx, col_idx])
             result["minus_ones_positions"] = minus_ones_positions
             result["minus_ones_positions_count"] = len(minus_ones_positions)
     
@@ -150,9 +149,9 @@ def log_clustering_step_result(reads1: List[int], reads0: List[int], cols: List[
     global results_logger
     step_result = {
         "step_number": step_num,
-        "reads_group1": [int(r) for r in reads1],  # Convert to int
-        "reads_group0": [int(r) for r in reads0],  # Convert to int
-        "columns": [int(c) for c in cols],  # Convert to int
+        "reads_group1": reads1,
+        "reads_group0": reads0,
+        "columns": cols,
         "ilp_calls": ilp_calls,
         "group1_size": len(reads1),
         "group0_size": len(reads0),
@@ -443,17 +442,12 @@ def clustering_step_with_stats(input_matrix: np.ndarray,
         
         # Apply quasi-biclique detection on appropriate matrix
         if clustering_1:
-            result = find_quasi_biclique(matrix1[remain_rows][:, current_cols], error_rate, log_results, f"iteration_{iteration}_positive")
+            # Search for positive patterns (dense regions of 1s)
+            rw, cl, status = find_quasi_biclique(matrix1[remain_rows][:, current_cols], error_rate, log_results, f"iteration_{iteration}_positive")
         else:
-            result = find_quasi_biclique(matrix0[remain_rows][:, current_cols], error_rate, log_results, f"iteration_{iteration}_negative")
+            # Search for negative patterns (dense regions of 0s in original)
+            rw, cl, status = find_quasi_biclique(matrix0[remain_rows][:, current_cols], error_rate, log_results, f"iteration_{iteration}_negative")
         
-        # Defensive unpacking to avoid "cannot unpack non-iterable int object"
-        if not (isinstance(result, tuple) and len(result) == 3):
-            logger.warning(f"find_quasi_biclique returned unexpected result: {result}")
-            rw, cl, status = [], [], False
-        else:
-            rw, cl, status = result
-
         if status:
             ilp_calls += 1
              
@@ -506,207 +500,232 @@ def find_quasi_biclique(
     phase: str = ""
 ) -> Tuple[List[int], List[int], bool]:
     """
-    Find a quasi-biclique in a binary matrix using integer linear programming optimization.
-    
-    This function identifies the largest dense sub-matrix where most elements are 1s,
-    with tolerance for noise defined by the error rate. It uses a three-phase approach:
-    seeding with a high-density region, then iteratively extending by rows and columns
-    to maximize the objective while maintaining density constraints.
+    Find a quasi-biclique in a binary matrix using the max_Ones_comp function with a 
+    seed-and-extend strategy.
     
     Parameters
     ----------
     input_matrix : np.ndarray
-        Input binary matrix with values (0, 1) where rows and columns represent 
-        data points and features respectively. Values indicate feature presence (1) 
-        or absence (0).
+        Input binary matrix with values (0, 1)
     error_rate : float, optional
-        Maximum fraction of 0s allowed in the quasi-biclique, defining noise tolerance.
-        A value of 0.025 means up to 2.5% of cells can be 0s. Default is 0.025.
+        Maximum fraction of 0s allowed in the quasi-biclique. Default is 0.025.
+    log_results : bool, optional
+        Whether to log detailed results. Default is False.
+    phase : str, optional
+        Name of the detection phase for logging. Default is "".
     
     Returns
     -------
     Tuple[List[int], List[int], bool]
-        Triple containing the quasi-biclique results:
+        Triple containing:
         - [0] : List[int] - Row indices included in the quasi-biclique
         - [1] : List[int] - Column indices included in the quasi-biclique  
         - [2] : bool - Success status (True if valid solution found, False otherwise)
-        
-        Empty lists are returned when no significant quasi-biclique is found or
-        optimization fails.
-    
-    Algorithm
-    ---------
-    1. **Preprocessing and Sorting**:
-       - Sort rows and columns by decreasing number of 1s
-       - Handle edge cases (empty matrix)
-       
-    2. **Seed Region Selection**:
-       - Start with top 1/3 of rows and columns by density
-       - Use max_e_r with delta=0 for initial seeding
-       
-    3. **Phase 1 - Row Extension**:
-       - Identify remaining rows with >50% compatibility with selected columns
-       - Use max_e_wr to extend with compatible rows
-       
-    4. **Phase 2 - Column Extension**:
-       - Identify remaining columns with >90% compatibility with selected rows
-       - Use max_e_wr for final optimization
-       
-    5. **Result Extraction**:
-       - Extract selected rows and columns from optimal solution
-       - Return success status based on optimization outcome
-    
     """
+    from density_contre_exempleV2.max_one import max_Ones_comp
+    
     # Copy input matrix to avoid modifying original
     X_problem = input_matrix.copy()
-
-    # 1. Calculer le degré (somme de 1s) pour chaque ligne et colonne
-    row_degrees = X_problem.sum(axis=1)
-    col_degrees = X_problem.sum(axis=0)
-
-    # 2. Trier les indices de lignes et colonnes par degré décroissant
-    rows_sorted = np.argsort(row_degrees)[::-1]
-    cols_sorted = np.argsort(col_degrees)[::-1]
-
-    m = len(rows_sorted)
-    n = len(cols_sorted)
-
-    if m == 0 or n == 0:
+    
+    # Get matrix dimensions
+    n_rows, n_cols = X_problem.shape
+    
+    # Handle edge case: empty matrix
+    if n_rows == 0 or n_cols == 0:
         logger.debug("Empty matrix provided to quasi-biclique detection")
         return [], [], False
-
-    logger.debug(f"Starting quasi-biclique detection on {m}x{n} matrix")
-
-    # 3. Prendre uniquement le tiers supérieur des colonnes pour la seed
-    n_seed = max(1, n // 3)
-    seed_cols_sorted = cols_sorted[:n_seed]
-    # Toutes les lignes pour la seed
-    seed_rows_sorted = rows_sorted
-
-    # Helper function to convert matrix to edge format
-    def matrix_to_edges(matrix, rows, cols):
-        """Convert matrix subset to edge format required by max_e_r"""
-        edges = []
-        rows_data = []
-        cols_data = []
-        
-        # Create rows_data with degrees
-        for i, row in enumerate(rows):
-            degree = np.sum(matrix[row, cols])
-            rows_data.append((i, degree))  # Use local indices
-        
-        # Create cols_data with degrees  
-        for j, col in enumerate(cols):
-            degree = np.sum(matrix[rows, col])
-            cols_data.append((j, degree))  # Use local indices
-        
-        # Create edges list
-        for i, row in enumerate(rows):
-            for j, col in enumerate(cols):
-                if matrix[row, col] == 1:
-                    edges.append((i, j))  # Use local indices
-        
-        return rows_data, cols_data, edges
-
-    # Phase 1: Find seed using max_e_r with delta=0
-    rows_data, cols_data, edges = matrix_to_edges(X_problem, seed_rows_sorted, seed_cols_sorted)
-
-    if not edges:
-        logger.debug("No edges found in matrix")
-        return [], [], False
-
-    final_rw = []
-    final_cl = []
-
+    
+    logger.debug(f"Starting quasi-biclique detection on {n_rows}x{n_cols} matrix")
+    
+    # Sort rows and columns by decreasing number of 1s (highest density first)
+    cols_sorted = np.argsort(X_problem.sum(axis=0))[::-1]
+    rows_sorted = np.argsort(X_problem.sum(axis=1))[::-1]
+    
+    # Phase 1: Seed region selection - find dense area to start optimization
+    seed_rows = n_rows // 3
+    seed_cols = n_cols // 3
+    
+    # Adjust step size based on matrix width
+    step_n = 10 if n_cols > 50 else 2
+    
+    # Search for the largest sub-region with >99% density of 1s
+    for x in range(n_rows // 3, n_rows, 10):
+        for y in range(seed_cols, n_cols, step_n):
+            nb_of_ones = 0
+            for row in rows_sorted[:x]:
+                for col in cols_sorted[:y]:
+                    nb_of_ones += X_problem[row, col]
+            ratio_ones = nb_of_ones / (x * y)
+            if ratio_ones > 0.99:
+                seed_rows = x
+                seed_cols = y
+    
+    logger.debug(f"Using seed region: {seed_rows} rows x {seed_cols} columns")
+    
+    # Calculate degree for each row and column in the seed region
+    seed_row_indices = rows_sorted[:seed_rows]
+    seed_col_indices = cols_sorted[:seed_cols]
+    
+    # Calculate degree for seed rows/columns (number of 1s in each row/column)
+    seed_matrix = X_problem[np.ix_(seed_row_indices, seed_col_indices)]
+    row_degrees = np.sum(seed_matrix == 1, axis=1)
+    col_degrees = np.sum(seed_matrix == 1, axis=0)
+    
+    # Create rows_data and cols_data for seed regions
+    rows_data = [(i, int(row_degrees[idx])) for idx, i in enumerate(seed_row_indices)]
+    cols_data = [(j, int(col_degrees[idx])) for idx, j in enumerate(seed_col_indices)]
+    
+    # Create edges: list of (row, col) pairs where the matrix has a 1
+    edges = []
+    for i_idx, i in enumerate(seed_row_indices):
+        for j_idx, j in enumerate(seed_col_indices):
+            if seed_matrix[i_idx, j_idx] == 1:
+                edges.append((i, j))
+    
+    # Solve initial optimization problem with seed rows and columns
     try:
         with suppress_gurobi_output():
-            model = max_e_r(rows_data, cols_data, edges, delta=0.0, debug=0)
-            if model is None:
-                logger.debug("Failed to create max_e_r model")
-                return [], [], False
-
-            model.Params.OutputFlag = 0
-            model.Params.LogToConsole = 0
-            model.Params.MIPGAP = 0.05
-            model.Params.TimeLimit = 20
+            # Create the model
+            model = max_Ones_comp(rows_data, cols_data, edges, error_rate)
+            model.setParam('OutputFlag', 0)
+            model.setParam('LogToConsole', 0)
+            model.setParam('MIPGAP', 0.05)
+            model.setParam('TimeLimit', 20)
             model.optimize()
-
-        if model.Status not in [grb.GRB.OPTIMAL, grb.GRB.TIME_LIMIT]:
-            logger.debug(f"Seed optimization failed with status {model.Status}")
-            return [], [], False
-
-        # Extraire la seed (indices locaux par rapport à seed_rows_sorted et seed_cols_sorted)
-        seed_rw = []
-        seed_cl = []
+        
+        # Extract seed solution results
+        rw = []
+        cl = []
         for var in model.getVars():
             if var.VarName.startswith('row_') and var.X > 0.5:
-                local_idx = int(var.VarName.split('_')[1])
-                seed_rw.append(local_idx)
+                rw.append(int(var.VarName.split('_')[1]))
             elif var.VarName.startswith('col_') and var.X > 0.5:
-                local_idx = int(var.VarName.split('_')[1])
-                seed_cl.append(local_idx)
-
-        prev_obj = int(model.ObjVal) if model.Status == grb.GRB.OPTIMAL else 0
-        logger.debug(f"Initial seed solution: {len(seed_rw)} rows, {len(seed_cl)} columns, obj={prev_obj}")
-
-        if not seed_rw or not seed_cl:
-            logger.debug("Empty seed solution found")
+                cl.append(int(var.VarName.split('_')[1]))
+        
+        logger.debug(f"Initial seed solution: {len(rw)} rows, {len(cl)} columns")
+        
+        # Phase 2: Row extension - add compatible rows
+        rem_rows = [r for r in range(n_rows) if r not in seed_row_indices]
+        if len(cl) > 0:
+            # Find rows with >50% compatibility with selected columns
+            rem_rows_sum = X_problem[rem_rows][:, cl].sum(axis=1)
+            potential_rows = [r for idx, r in enumerate(rem_rows) 
+                             if rem_rows_sum[idx] > 0.5 * len(cl)]
+        else:
+            potential_rows = []
+        
+        # If there are potential rows to add, create a new optimization
+        if potential_rows and len(rw) > 0 and len(cl) > 0:
+            logger.debug(f"Extending with {len(potential_rows)} compatible rows")
+            
+            # All rows to consider (selected rows + potential rows)
+            extended_rows = rw + potential_rows
+            
+            # Calculate degrees for extended rows
+            extended_row_degrees = np.sum(X_problem[extended_rows][:, cl] == 1, axis=1)
+            
+            # Create new data for extended optimization
+            extended_rows_data = [(r, int(extended_row_degrees[idx])) for idx, r in enumerate(extended_rows)]
+            extended_cols_data = [(c, int(np.sum(X_problem[extended_rows, c] == 1))) for c in cl]
+            
+            # Create edges for extended optimization
+            extended_edges = []
+            for i in extended_rows:
+                for j in cl:
+                    if X_problem[i, j] == 1:
+                        extended_edges.append((i, j))
+            
+            # Run extended optimization with rows
+            with suppress_gurobi_output():
+                extended_model = max_Ones_comp(extended_rows_data, extended_cols_data, extended_edges, error_rate)
+                extended_model.setParam('OutputFlag', 0)
+                extended_model.setParam('LogToConsole', 0)
+                extended_model.setParam('MIPGAP', 0.05)
+                extended_model.setParam('TimeLimit', 20)
+                extended_model.optimize()
+            
+            # Extract results after row extension
+            rw = []
+            cl = []
+            for var in extended_model.getVars():
+                if var.VarName.startswith('row_') and var.X > 0.5:
+                    rw.append(int(var.VarName.split('_')[1]))
+                elif var.VarName.startswith('col_') and var.X > 0.5:
+                    cl.append(int(var.VarName.split('_')[1]))
+        
+        # Phase 3: Column extension - add compatible columns
+        rem_cols = [c for c in range(n_cols) if c not in cl]
+        if len(rw) > 0:
+            # Find columns with >90% compatibility with selected rows
+            rem_cols_sum = X_problem[rw][:, rem_cols].sum(axis=0)
+            potential_cols = [c for idx, c in enumerate(rem_cols) 
+                             if rem_cols_sum[idx] > 0.9 * len(rw)]
+        else:
+            potential_cols = []
+        
+        # If there are potential columns to add, create a final optimization
+        if potential_cols and len(rw) > 0:
+            logger.debug(f"Extending with {len(potential_cols)} compatible columns")
+            
+            # All columns to consider (selected columns + potential columns)
+            final_cols = cl + potential_cols
+            
+            # Calculate degrees for final optimization
+            final_row_degrees = np.sum(X_problem[rw][:, final_cols] == 1, axis=1)
+            final_col_degrees = np.sum(X_problem[rw][:, final_cols] == 1, axis=0)
+            
+            # Create data for final optimization
+            final_rows_data = [(r, int(final_row_degrees[idx])) for idx, r in enumerate(rw)]
+            final_cols_data = [(c, int(np.sum(X_problem[rw, c] == 1))) for c in final_cols]
+            
+            # Create edges for final optimization
+            final_edges = []
+            for i in rw:
+                for j in final_cols:
+                    if X_problem[i, j] == 1:
+                        final_edges.append((i, j))
+            
+            # Run final optimization
+            with suppress_gurobi_output():
+                final_model = max_Ones_comp(final_rows_data, final_cols_data, final_edges, error_rate)
+                final_model.setParam('OutputFlag', 0)
+                final_model.setParam('LogToConsole', 0)
+                final_model.setParam('MIPGAP', 0.05)
+                final_model.setParam('TimeLimit', 20)
+                final_model.optimize()
+            
+            # Extract final results
+            rw = []
+            cl = []
+            for var in final_model.getVars():
+                if var.VarName.startswith('row_') and var.X > 0.5:
+                    rw.append(int(var.VarName.split('_')[1]))
+                elif var.VarName.startswith('col_') and var.X > 0.5:
+                    cl.append(int(var.VarName.split('_')[1]))
+        
+        logger.debug(f"Final quasi-biclique: {len(rw)} rows, {len(cl)} columns")
+        
+        # Check if we found a valid solution
+        if len(rw) > 0 and len(cl) > 0:
+            # Calculate density of final selection
+            selected = X_problem[np.ix_(rw, cl)]
+            density = np.sum(selected == 1) / selected.size
+            logger.debug(f"Final density: {density:.4f}")
+            
+            # Log results if requested
+            if log_results:
+                log_quasi_biclique_result(input_matrix, rw, cl, True, phase)
+            
+            return rw, cl, True
+        else:
+            # Log failed attempt if requested
+            if log_results:
+                log_quasi_biclique_result(input_matrix, [], [], False, phase)
             return [], [], False
-
+        
     except Exception as e:
-        logger.warning(f"Failed to solve seed optimization: {e}")
+        logger.error(f"Error solving optimization problem: {e}")
+        # Log failed attempt if requested
+        if log_results:
+            log_quasi_biclique_result(input_matrix, [], [], False, phase)
         return [], [], False
-
-    # 4. Pour l'extension, utiliser toutes les colonnes mais uniquement les lignes sélectionnées par la seed
-    # Convertir les indices locaux seed_rw vers indices globaux
-    selected_rows_global = [seed_rows_sorted[i] for i in seed_rw]
-    # Toutes les colonnes (indices globaux)
-    all_cols_global = cols_sorted
-
-    # Recalculer rows_data, cols_data, edges pour max_e_wr
-    rows_data_ext, cols_data_ext, edges_ext = matrix_to_edges(X_problem, selected_rows_global, all_cols_global)
-
-    try:
-        with suppress_gurobi_output():
-            model = max_e_wr(rows_data_ext, cols_data_ext, edges_ext, list(range(len(selected_rows_global))), list(range(len(all_cols_global))), prev_obj, delta=error_rate, debug=0)
-            if model is None:
-                logger.debug("Failed to create max_e_wr model for extension")
-                # Fall back to seed solution
-                final_rw = selected_rows_global
-                final_cl = [seed_cols_sorted[i] for i in seed_cl]
-            else:
-                model.Params.OutputFlag = 0
-                model.Params.LogToConsole = 0
-                model.Params.MIPGAP = 0.05
-                model.Params.TimeLimit = 30
-                model.optimize()
-
-                if model.Status in [grb.GRB.OPTIMAL, grb.GRB.TIME_LIMIT]:
-                    # Extraire la solution finale (indices locaux par rapport à selected_rows_global et all_cols_global)
-                    for var in model.getVars():
-                        if var.VarName.startswith('row_') and var.X > 0.5:
-                            local_idx = int(var.VarName.split('_')[1])
-                            final_rw.append(selected_rows_global[local_idx])
-                        elif var.VarName.startswith('col_') and var.X > 0.5:
-                            local_idx = int(var.VarName.split('_')[1])
-                            final_cl.append(all_cols_global[local_idx])
-
-                    logger.debug(f"Extension completed: {len(final_rw)} rows, {len(final_cl)} columns")
-                else:
-                    logger.debug(f"Extension optimization failed with status {model.Status}")
-                    # Fall back to seed solution
-                    final_rw = selected_rows_global
-                    final_cl = [seed_cols_sorted[i] for i in seed_cl]
-
-    except Exception as e:
-        logger.warning(f"Extension failed: {e}")
-        # Fall back to seed solution
-        final_rw = selected_rows_global
-        final_cl = [seed_cols_sorted[i] for i in seed_cl]
-
-    logger.debug(f"Quasi-biclique found: {len(final_rw)} rows, {len(final_cl)} columns")
-
-    if log_results:
-        log_quasi_biclique_result(input_matrix, final_rw, final_cl, True, phase)
-
-    return final_rw, final_cl, True
