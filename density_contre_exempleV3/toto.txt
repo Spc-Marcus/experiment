@@ -1,0 +1,222 @@
+2025-06-24 11:07:44,723 - clustering - DEBUG - Processing region 0 with 26 columns
+2025-06-24 11:07:44,723 - clustering - DEBUG - Starting clustering step on 50 rows, 26 columns
+2025-06-24 11:07:44,724 - clustering - DEBUG - Clustering iteration 1: 50 rows, 26 columns, pattern=positive
+2025-06-24 11:07:44,724 - clustering - DEBUG - [QUASI-BICLIQUE] Starting find_quasi_biclique with phase='iteration_1_positive', error_rate=0.025
+2025-06-24 11:07:44,725 - clustering - DEBUG - [QUASI-BICLIQUE] Created matrix copy with shape (50, 26)
+2025-06-24 11:07:44,725 - clustering - DEBUG - [QUASI-BICLIQUE] Matrix dimensions: 50 rows x 26 columns
+2025-06-24 11:07:44,725 - clustering - DEBUG - [QUASI-BICLIQUE] Initial matrix stats: 1131 ones, 169 zeros, density=0.8700
+2025-06-24 11:07:44,726 - clustering - DEBUG - [QUASI-BICLIQUE] Created MaxERSolver with debug_level=1
+2025-06-24 11:07:44,726 - clustering - DEBUG - [QUASI-BICLIQUE] Sorted by density - top 5 rows: [32  1 14 13 17] (sums: [26 26 26 26 26])
+2025-06-24 11:07:44,727 - clustering - DEBUG - [QUASI-BICLIQUE] Sorted by density - top 5 cols: [25 24 23 22 21] (sums: [50 50 50 50 50])
+2025-06-24 11:07:44,727 - clustering - DEBUG - [QUASI-BICLIQUE] Seed region size: 16 rows x 8 columns
+2025-06-24 11:07:44,728 - clustering - DEBUG - [QUASI-BICLIQUE] Selected seed row indices: [32  1 14 13 17 16 20 21 22 19]...
+2025-06-24 11:07:44,728 - clustering - DEBUG - [QUASI-BICLIQUE] Selected seed col indices: [25 24 23 22 21 19 17 18]
+2025-06-24 11:07:44,729 - clustering - DEBUG - [QUASI-BICLIQUE] Seed matrix density: 1.0000
+2025-06-24 11:07:44,729 - clustering - DEBUG - [QUASI-BICLIQUE] Row degrees range: [8, 8], mean: 8.00
+2025-06-24 11:07:44,730 - clustering - DEBUG - [QUASI-BICLIQUE] Col degrees range: [16, 16], mean: 16.00
+2025-06-24 11:07:44,731 - clustering - DEBUG - [QUASI-BICLIQUE] Prepared data for max_e_r: 16 rows, 8 cols, 128 edges
+2025-06-24 11:07:44,731 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 1: SEED DETECTION ==========
+2025-06-24 11:07:44,732 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_r...
+2025-06-24 11:07:44,742 - clustering - DEBUG - [QUASI-BICLIQUE] Setting Gurobi parameters for seed model
+2025-06-24 11:07:44,742 - clustering - DEBUG - [QUASI-BICLIQUE] Starting seed model optimization...
+2025-06-24 11:07:44,742 - clustering - DEBUG - [QUASI-BICLIQUE] Seed optimization completed with status: 2
+2025-06-24 11:07:44,742 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting seed solution variables...
+2025-06-24 11:07:44,743 - clustering - DEBUG - [QUASI-BICLIQUE] Seed solution extracted: 16 rows, 8 columns, obj=128.0
+2025-06-24 11:07:44,743 - clustering - DEBUG - [QUASI-BICLIQUE] Seed row indices: [32, 1, 14, 13, 17, 16, 20, 21, 22, 19, 23, 24, 25, 26, 28, 29]
+2025-06-24 11:07:44,743 - clustering - DEBUG - [QUASI-BICLIQUE] Seed col indices: [25, 24, 23, 22, 21, 19, 17, 18]
+2025-06-24 11:07:44,744 - clustering - DEBUG - [QUASI-BICLIQUE] Seed solution density: 1.0000
+2025-06-24 11:07:44,745 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 2: ROW EXTENSION ==========
+2025-06-24 11:07:44,745 - clustering - DEBUG - [QUASI-BICLIQUE] Remaining rows for extension: 34
+2025-06-24 11:07:44,745 - clustering - DEBUG - [QUASI-BICLIQUE] Calculating row compatibility...
+2025-06-24 11:07:44,746 - clustering - DEBUG - [QUASI-BICLIQUE] Found 34 potential rows with >50% compatibility
+2025-06-24 11:07:44,747 - clustering - DEBUG - [QUASI-BICLIQUE] Compatibility range: [1.000, 1.000]
+2025-06-24 11:07:44,747 - clustering - DEBUG - [QUASI-BICLIQUE] Starting row extension with 34 potential rows
+2025-06-24 11:07:44,748 - clustering - DEBUG - [QUASI-BICLIQUE] Extended row degrees range: [8, 8]
+2025-06-24 11:07:44,749 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension data: 400 edges
+2025-06-24 11:07:44,749 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_wr for row extension...
+2025-06-24 11:07:44,788 - clustering - DEBUG - [QUASI-BICLIQUE] Setting parameters for row extension model
+2025-06-24 11:07:44,788 - clustering - DEBUG - [QUASI-BICLIQUE] Starting row extension optimization...
+2025-06-24 11:07:44,789 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension completed with status: 2
+2025-06-24 11:07:44,790 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting row extension solution...
+2025-06-24 11:07:44,792 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension solution: 50 rows, 8 columns, obj=400.0
+2025-06-24 11:07:44,792 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension density: 1.0000
+2025-06-24 11:07:44,792 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 3: COLUMN EXTENSION ==========
+2025-06-24 11:07:44,793 - clustering - DEBUG - [QUASI-BICLIQUE] Remaining columns for extension: 18
+2025-06-24 11:07:44,793 - clustering - DEBUG - [QUASI-BICLIQUE] Calculating column compatibility...
+2025-06-24 11:07:44,793 - clustering - DEBUG - [QUASI-BICLIQUE] Found 6 potential columns with >80% compatibility
+2025-06-24 11:07:44,794 - clustering - DEBUG - [QUASI-BICLIQUE] Column compatibility range: [0.700, 1.000]
+2025-06-24 11:07:44,794 - clustering - DEBUG - [QUASI-BICLIQUE] Starting column extension with 6 potential columns
+2025-06-24 11:07:44,795 - clustering - DEBUG - [QUASI-BICLIQUE] Extended col degrees range: [49, 50]
+2025-06-24 11:07:44,796 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension data: 699 edges
+2025-06-24 11:07:44,796 - clustering - DEBUG - [QUASI-BICLIQUE] Using previous objective: 400.0
+2025-06-24 11:07:44,796 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_wr for column extension...
+2025-06-24 11:07:44,868 - clustering - DEBUG - [QUASI-BICLIQUE] Setting parameters for column extension model
+2025-06-24 11:07:44,868 - clustering - DEBUG - [QUASI-BICLIQUE] Starting column extension optimization...
+2025-06-24 11:07:44,870 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension completed with status: 2
+2025-06-24 11:07:44,870 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting column extension solution...
+2025-06-24 11:07:44,874 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension solution: 50 rows, 14 columns
+2025-06-24 11:07:44,874 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension density: 0.9986
+2025-06-24 11:07:44,875 - clustering - DEBUG - [QUASI-BICLIQUE] ========== FINAL SOLUTION VALIDATION ==========
+2025-06-24 11:07:44,875 - clustering - DEBUG - [QUASI-BICLIQUE] Final quasi-biclique found:
+2025-06-24 11:07:44,876 - clustering - DEBUG - [QUASI-BICLIQUE]   - Dimensions: 50 rows x 14 columns
+2025-06-24 11:07:44,876 - clustering - DEBUG - [QUASI-BICLIQUE]   - Density: 0.9986
+2025-06-24 11:07:44,877 - clustering - DEBUG - [QUASI-BICLIQUE]   - Ones: 699, Zeros: 1
+2025-06-24 11:07:44,877 - clustering - DEBUG - [QUASI-BICLIQUE]   - Row indices: [32, 1, 14, 13, 17, 16, 20, 21, 22, 19, 23, 24, 25, 26, 28, 29, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 18, 27, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+2025-06-24 11:07:44,877 - clustering - DEBUG - [QUASI-BICLIQUE]   - Column indices: [25, 24, 23, 22, 21, 19, 17, 18, 12, 13, 14, 15, 16, 20]
+2025-06-24 11:07:44,877 - clustering - DEBUG - [QUASI-BICLIQUE] Successfully returning valid solution
+2025-06-24 11:07:44,879 - clustering - DEBUG - Added 50 rows to positive group
+2025-06-24 11:07:44,879 - clustering - DEBUG - Clustering step completed: 50 positive reads, 0 negative reads, 14 columns
+2025-06-24 11:07:44,879 - clustering - DEBUG - Found clustering step: 50 vs 0 reads, 14 columns
+2025-06-24 11:07:44,880 - clustering - DEBUG - Starting clustering step on 50 rows, 12 columns
+2025-06-24 11:07:44,881 - clustering - DEBUG - Clustering iteration 1: 50 rows, 12 columns, pattern=positive
+2025-06-24 11:07:44,882 - clustering - DEBUG - [QUASI-BICLIQUE] Starting find_quasi_biclique with phase='iteration_1_positive', error_rate=0.025
+2025-06-24 11:07:44,883 - clustering - DEBUG - [QUASI-BICLIQUE] Created matrix copy with shape (50, 12)
+2025-06-24 11:07:44,883 - clustering - DEBUG - [QUASI-BICLIQUE] Matrix dimensions: 50 rows x 12 columns
+2025-06-24 11:07:44,883 - clustering - DEBUG - [QUASI-BICLIQUE] Initial matrix stats: 432 ones, 168 zeros, density=0.7200
+2025-06-24 11:07:44,884 - clustering - DEBUG - [QUASI-BICLIQUE] Created MaxERSolver with debug_level=1
+2025-06-24 11:07:44,884 - clustering - DEBUG - [QUASI-BICLIQUE] Sorted by density - top 5 rows: [32  1 14 16 18] (sums: [12 12 12 12 12])
+2025-06-24 11:07:44,885 - clustering - DEBUG - [QUASI-BICLIQUE] Sorted by density - top 5 cols: [10 11  9  8  7] (sums: [37 36 36 36 36])
+2025-06-24 11:07:44,885 - clustering - DEBUG - [QUASI-BICLIQUE] Seed region size: 16 rows x 4 columns
+2025-06-24 11:07:44,886 - clustering - DEBUG - [QUASI-BICLIQUE] Selected seed row indices: [32  1 14 16 18 17 20 21 22 19]...
+2025-06-24 11:07:44,886 - clustering - DEBUG - [QUASI-BICLIQUE] Selected seed col indices: [10 11  9  8]
+2025-06-24 11:07:44,887 - clustering - DEBUG - [QUASI-BICLIQUE] Seed matrix density: 1.0000
+2025-06-24 11:07:44,887 - clustering - DEBUG - [QUASI-BICLIQUE] Row degrees range: [4, 4], mean: 4.00
+2025-06-24 11:07:44,888 - clustering - DEBUG - [QUASI-BICLIQUE] Col degrees range: [16, 16], mean: 16.00
+2025-06-24 11:07:44,888 - clustering - DEBUG - [QUASI-BICLIQUE] Prepared data for max_e_r: 16 rows, 4 cols, 64 edges
+2025-06-24 11:07:44,888 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 1: SEED DETECTION ==========
+2025-06-24 11:07:44,888 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_r...
+2025-06-24 11:07:44,893 - clustering - DEBUG - [QUASI-BICLIQUE] Setting Gurobi parameters for seed model
+2025-06-24 11:07:44,893 - clustering - DEBUG - [QUASI-BICLIQUE] Starting seed model optimization...
+2025-06-24 11:07:44,893 - clustering - DEBUG - [QUASI-BICLIQUE] Seed optimization completed with status: 2
+2025-06-24 11:07:44,894 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting seed solution variables...
+2025-06-24 11:07:44,894 - clustering - DEBUG - [QUASI-BICLIQUE] Seed solution extracted: 16 rows, 4 columns, obj=64.0
+2025-06-24 11:07:44,894 - clustering - DEBUG - [QUASI-BICLIQUE] Seed row indices: [32, 1, 14, 16, 18, 17, 20, 21, 22, 19, 23, 24, 25, 26, 28, 29]
+2025-06-24 11:07:44,895 - clustering - DEBUG - [QUASI-BICLIQUE] Seed col indices: [10, 11, 9, 8]
+2025-06-24 11:07:44,895 - clustering - DEBUG - [QUASI-BICLIQUE] Seed solution density: 1.0000
+2025-06-24 11:07:44,895 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 2: ROW EXTENSION ==========
+2025-06-24 11:07:44,895 - clustering - DEBUG - [QUASI-BICLIQUE] Remaining rows for extension: 34
+2025-06-24 11:07:44,895 - clustering - DEBUG - [QUASI-BICLIQUE] Calculating row compatibility...
+2025-06-24 11:07:44,896 - clustering - DEBUG - [QUASI-BICLIQUE] Found 21 potential rows with >50% compatibility
+2025-06-24 11:07:44,897 - clustering - DEBUG - [QUASI-BICLIQUE] Compatibility range: [0.000, 1.000]
+2025-06-24 11:07:44,897 - clustering - DEBUG - [QUASI-BICLIQUE] Starting row extension with 21 potential rows
+2025-06-24 11:07:44,898 - clustering - DEBUG - [QUASI-BICLIQUE] Extended row degrees range: [3, 4]
+2025-06-24 11:07:44,899 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension data: 145 edges
+2025-06-24 11:07:44,899 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_wr for row extension...
+2025-06-24 11:07:44,912 - clustering - DEBUG - [QUASI-BICLIQUE] Setting parameters for row extension model
+2025-06-24 11:07:44,912 - clustering - DEBUG - [QUASI-BICLIQUE] Starting row extension optimization...
+2025-06-24 11:07:44,913 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension completed with status: 2
+2025-06-24 11:07:44,913 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting row extension solution...
+2025-06-24 11:07:44,914 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension solution: 37 rows, 4 columns, obj=145.0
+2025-06-24 11:07:44,914 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension density: 0.9797
+2025-06-24 11:07:44,915 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 3: COLUMN EXTENSION ==========
+2025-06-24 11:07:44,915 - clustering - DEBUG - [QUASI-BICLIQUE] Remaining columns for extension: 8
+2025-06-24 11:07:44,916 - clustering - DEBUG - [QUASI-BICLIQUE] Calculating column compatibility...
+2025-06-24 11:07:44,916 - clustering - DEBUG - [QUASI-BICLIQUE] Found 8 potential columns with >80% compatibility
+2025-06-24 11:07:44,917 - clustering - DEBUG - [QUASI-BICLIQUE] Column compatibility range: [0.946, 0.973]
+2025-06-24 11:07:44,917 - clustering - DEBUG - [QUASI-BICLIQUE] Starting column extension with 8 potential columns
+2025-06-24 11:07:44,918 - clustering - DEBUG - [QUASI-BICLIQUE] Extended col degrees range: [35, 37]
+2025-06-24 11:07:44,919 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension data: 432 edges
+2025-06-24 11:07:44,919 - clustering - DEBUG - [QUASI-BICLIQUE] Using previous objective: 145.0
+2025-06-24 11:07:44,920 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_wr for column extension...
+2025-06-24 11:07:44,959 - clustering - DEBUG - [QUASI-BICLIQUE] Setting parameters for column extension model
+2025-06-24 11:07:44,960 - clustering - DEBUG - [QUASI-BICLIQUE] Starting column extension optimization...
+2025-06-24 11:07:44,961 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension completed with status: 2
+2025-06-24 11:07:44,961 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting column extension solution...
+2025-06-24 11:07:44,963 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension solution: 37 rows, 12 columns
+2025-06-24 11:07:44,964 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension density: 0.9730
+2025-06-24 11:07:44,964 - clustering - DEBUG - [QUASI-BICLIQUE] ========== FINAL SOLUTION VALIDATION ==========
+2025-06-24 11:07:44,964 - clustering - DEBUG - [QUASI-BICLIQUE] Final quasi-biclique found:
+2025-06-24 11:07:44,964 - clustering - DEBUG - [QUASI-BICLIQUE]   - Dimensions: 37 rows x 12 columns
+2025-06-24 11:07:44,965 - clustering - DEBUG - [QUASI-BICLIQUE]   - Density: 0.9730
+2025-06-24 11:07:44,965 - clustering - DEBUG - [QUASI-BICLIQUE]   - Ones: 432, Zeros: 12
+2025-06-24 11:07:44,966 - clustering - DEBUG - [QUASI-BICLIQUE]   - Row indices: [32, 1, 14, 16, 18, 17, 20, 21, 22, 19, 23, 24, 25, 26, 28, 29, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 27, 30, 31, 33, 34, 35, 36]
+2025-06-24 11:07:44,966 - clustering - DEBUG - [QUASI-BICLIQUE]   - Column indices: [10, 11, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7]
+2025-06-24 11:07:44,966 - clustering - DEBUG - [QUASI-BICLIQUE] Successfully returning valid solution
+2025-06-24 11:07:44,967 - clustering - DEBUG - Added 37 rows to positive group
+2025-06-24 11:07:44,967 - clustering - DEBUG - Clustering iteration 2: 13 rows, 12 columns, pattern=negative
+2025-06-24 11:07:44,968 - clustering - DEBUG - [QUASI-BICLIQUE] Starting find_quasi_biclique with phase='iteration_2_negative', error_rate=0.025
+2025-06-24 11:07:44,968 - clustering - DEBUG - [QUASI-BICLIQUE] Created matrix copy with shape (13, 12)
+2025-06-24 11:07:44,968 - clustering - DEBUG - [QUASI-BICLIQUE] Matrix dimensions: 13 rows x 12 columns
+2025-06-24 11:07:44,969 - clustering - DEBUG - [QUASI-BICLIQUE] Initial matrix stats: 156 ones, 0 zeros, density=1.0000
+2025-06-24 11:07:44,970 - clustering - DEBUG - [QUASI-BICLIQUE] Created MaxERSolver with debug_level=1
+2025-06-24 11:07:44,970 - clustering - DEBUG - [QUASI-BICLIQUE] Sorted by density - top 5 rows: [12 11 10  9  8] (sums: [12 12 12 12 12])
+2025-06-24 11:07:44,971 - clustering - DEBUG - [QUASI-BICLIQUE] Sorted by density - top 5 cols: [11 10  9  8  7] (sums: [13 13 13 13 13])
+2025-06-24 11:07:44,971 - clustering - DEBUG - [QUASI-BICLIQUE] Seed region size: 4 rows x 4 columns
+2025-06-24 11:07:44,972 - clustering - DEBUG - [QUASI-BICLIQUE] Selected seed row indices: [12 11 10  9]
+2025-06-24 11:07:44,973 - clustering - DEBUG - [QUASI-BICLIQUE] Selected seed col indices: [11 10  9  8]
+2025-06-24 11:07:44,974 - clustering - DEBUG - [QUASI-BICLIQUE] Seed matrix density: 1.0000
+2025-06-24 11:07:44,974 - clustering - DEBUG - [QUASI-BICLIQUE] Row degrees range: [4, 4], mean: 4.00
+2025-06-24 11:07:44,975 - clustering - DEBUG - [QUASI-BICLIQUE] Col degrees range: [4, 4], mean: 4.00
+2025-06-24 11:07:44,975 - clustering - DEBUG - [QUASI-BICLIQUE] Prepared data for max_e_r: 4 rows, 4 cols, 16 edges
+2025-06-24 11:07:44,976 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 1: SEED DETECTION ==========
+2025-06-24 11:07:44,977 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_r...
+2025-06-24 11:07:44,979 - clustering - DEBUG - [QUASI-BICLIQUE] Setting Gurobi parameters for seed model
+2025-06-24 11:07:44,979 - clustering - DEBUG - [QUASI-BICLIQUE] Starting seed model optimization...
+2025-06-24 11:07:44,979 - clustering - DEBUG - [QUASI-BICLIQUE] Seed optimization completed with status: 2
+2025-06-24 11:07:44,980 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting seed solution variables...
+2025-06-24 11:07:44,980 - clustering - DEBUG - [QUASI-BICLIQUE] Seed solution extracted: 4 rows, 4 columns, obj=16.0
+2025-06-24 11:07:44,980 - clustering - DEBUG - [QUASI-BICLIQUE] Seed row indices: [12, 11, 10, 9]
+2025-06-24 11:07:44,980 - clustering - DEBUG - [QUASI-BICLIQUE] Seed col indices: [11, 10, 9, 8]
+2025-06-24 11:07:44,981 - clustering - DEBUG - [QUASI-BICLIQUE] Seed solution density: 1.0000
+2025-06-24 11:07:44,981 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 2: ROW EXTENSION ==========
+2025-06-24 11:07:44,981 - clustering - DEBUG - [QUASI-BICLIQUE] Remaining rows for extension: 9
+2025-06-24 11:07:44,982 - clustering - DEBUG - [QUASI-BICLIQUE] Calculating row compatibility...
+2025-06-24 11:07:44,982 - clustering - DEBUG - [QUASI-BICLIQUE] Found 9 potential rows with >50% compatibility
+2025-06-24 11:07:44,982 - clustering - DEBUG - [QUASI-BICLIQUE] Compatibility range: [1.000, 1.000]
+2025-06-24 11:07:44,983 - clustering - DEBUG - [QUASI-BICLIQUE] Starting row extension with 9 potential rows
+2025-06-24 11:07:44,983 - clustering - DEBUG - [QUASI-BICLIQUE] Extended row degrees range: [4, 4]
+2025-06-24 11:07:44,984 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension data: 52 edges
+2025-06-24 11:07:44,984 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_wr for row extension...
+2025-06-24 11:07:44,988 - clustering - DEBUG - [QUASI-BICLIQUE] Setting parameters for row extension model
+2025-06-24 11:07:44,988 - clustering - DEBUG - [QUASI-BICLIQUE] Starting row extension optimization...
+2025-06-24 11:07:44,989 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension completed with status: 2
+2025-06-24 11:07:44,989 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting row extension solution...
+2025-06-24 11:07:44,990 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension solution: 13 rows, 4 columns, obj=52.0
+2025-06-24 11:07:44,990 - clustering - DEBUG - [QUASI-BICLIQUE] Row extension density: 1.0000
+2025-06-24 11:07:44,991 - clustering - DEBUG - [QUASI-BICLIQUE] ========== STARTING PHASE 3: COLUMN EXTENSION ==========
+2025-06-24 11:07:44,991 - clustering - DEBUG - [QUASI-BICLIQUE] Remaining columns for extension: 8
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Calculating column compatibility...
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Found 8 potential columns with >80% compatibility
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Column compatibility range: [1.000, 1.000]
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Starting column extension with 8 potential columns
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Extended col degrees range: [13, 13]
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension data: 156 edges
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Using previous objective: 52.0
+2025-06-24 11:07:44,992 - clustering - DEBUG - [QUASI-BICLIQUE] Calling max_e_wr for column extension...
+2025-06-24 11:07:45,004 - clustering - DEBUG - [QUASI-BICLIQUE] Setting parameters for column extension model
+2025-06-24 11:07:45,004 - clustering - DEBUG - [QUASI-BICLIQUE] Starting column extension optimization...
+2025-06-24 11:07:45,004 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension completed with status: 2
+2025-06-24 11:07:45,004 - clustering - DEBUG - [QUASI-BICLIQUE] Extracting column extension solution...
+2025-06-24 11:07:45,006 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension solution: 13 rows, 12 columns
+2025-06-24 11:07:45,006 - clustering - DEBUG - [QUASI-BICLIQUE] Column extension density: 1.0000
+2025-06-24 11:07:45,007 - clustering - DEBUG - [QUASI-BICLIQUE] ========== FINAL SOLUTION VALIDATION ==========
+2025-06-24 11:07:45,007 - clustering - DEBUG - [QUASI-BICLIQUE] Final quasi-biclique found:
+2025-06-24 11:07:45,008 - clustering - DEBUG - [QUASI-BICLIQUE]   - Dimensions: 13 rows x 12 columns
+2025-06-24 11:07:45,008 - clustering - DEBUG - [QUASI-BICLIQUE]   - Density: 1.0000
+2025-06-24 11:07:45,008 - clustering - DEBUG - [QUASI-BICLIQUE]   - Ones: 156, Zeros: 0
+2025-06-24 11:07:45,008 - clustering - DEBUG - [QUASI-BICLIQUE]   - Row indices: [12, 11, 10, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+2025-06-24 11:07:45,008 - clustering - DEBUG - [QUASI-BICLIQUE]   - Column indices: [11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7]
+2025-06-24 11:07:45,008 - clustering - DEBUG - [QUASI-BICLIQUE] Successfully returning valid solution
+2025-06-24 11:07:45,009 - clustering - DEBUG - Added 13 rows to negative group
+2025-06-24 11:07:45,009 - clustering - DEBUG - Clustering step completed: 37 positive reads, 13 negative reads, 12 columns
+2025-06-24 11:07:45,010 - clustering - DEBUG - Group 1 densities: ones=0.973, zeros=0.027
+2025-06-24 11:07:45,010 - clustering - DEBUG - Group 0 densities: ones=0.000, zeros=1.000
+2025-06-24 11:07:45,011 - clustering - DEBUG - Found clustering step: 37 vs 13 reads, 12 columns
+2025-06-24 11:07:45,012 - clustering - DEBUG - Clustering completed: 2 total steps found
+2025-06-24 11:07:45,012 - clustering - INFO - Found 1 valid clustering steps
+Loaded matrix from matrix_edge_17_10000.csv
+Shape: (50, 26)
+Density: 0.870
+Processing matrix of shape (50, 26)
+Using 1 regions
+Error rate: 0.025
+Min row quality: 5
+Min column quality: 3
+Results saved to clustering_results.json
+
+Processing completed in 0.29 seconds
+Found 1 valid clustering steps
+Results saved to clustering_results.json
+
+Final results:
+  Step 1: 37 vs 13 reads, 12 columns
