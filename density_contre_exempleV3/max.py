@@ -183,9 +183,8 @@ def __col_density(rows_data, cols_data, edges, model, lpRows, lpCols, delta):
     for col, _ in cols_data:
         col_edges = [u for u, v in edges if v == col]
         model.addConstr(
-            gp.quicksum(
-            (1 - delta) * gp.quicksum(lpRows[row][0] for row, _ in rows_data)
-             -lpRows[row][0] for row in col_edges) >= 
+            gp.quicksum(lpRows[row][0] for row in col_edges) - 
+            (1 - delta) * gp.quicksum(lpRows[row][0] for row, _ in rows_data) >= 
             (lpCols[col][0] - 1) * Big_C,
             f"col_err_rate_1_{col}"
         )
@@ -213,10 +212,8 @@ def __row_density(rows_data, cols_data, edges, model, lpRows, lpCols, delta):
     for row, _ in rows_data:
         row_edges = [v for u, v in edges if u == row]
         model.addConstr(
-            gp.quicksum( 
-            (1 - delta) * gp.quicksum(lpCols[col][0] for col, _ in cols_data) 
-            - lpCols[col][0] for col in row_edges)
-            >= 
+            gp.quicksum(lpCols[col][0] for col in row_edges) - 
+            (1 - delta) * gp.quicksum(lpCols[col][0] for col, _ in cols_data) >= 
             (lpRows[row][0] - 1) * Big_R,
             f"row_err_rate_1_{row}"
         )
