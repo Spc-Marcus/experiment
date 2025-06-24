@@ -9,7 +9,7 @@ from clustering import clustering_full_matrix, save_results_to_file
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(name)s - %(levelname)s - %(message)s'
 )
 logging.getLogger('gurobipy').setLevel(logging.WARNING)
 # Le reste de votre code reste inchangé...
