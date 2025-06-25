@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import contextlib
+import traceback
 from io import StringIO
 from pathlib import Path
 import json
@@ -631,195 +632,76 @@ def find_quasi_biclique(
         seed_solution_density = np.sum(seed_solution_matrix == 1) / seed_solution_matrix.size
         logger.debug(f"[QUASI-BICLIQUE] Seed solution density: {seed_solution_density:.4f}")
         
+        # PHASE 2: Extension using max_e_wr on the entire matrix
+        logger.debug("[QUASI-BICLIQUE] ========== STARTING PHASE 2: FULL MATRIX EXTENSION ==========")
         
-        # PHASE 3: Column extension using max_e_wr
-        logger.debug("[QUASI-BICLIQUE] ========== STARTING PHASE 3: COLUMN EXTENSION ==========")
-        # Find potential new columns
-        remaining_cols = [c for c in range(n_cols) if c not in cl]
-        logger.debug(f"[QUASI-BICLIQUE] Remaining columns for extension: {len(remaining_cols)}")
+        # Prepare data for max_e_wr on the entire matrix
+        all_row_degrees = np.sum(X_problem == 1, axis=1)
+        all_col_degrees = np.sum(X_problem == 1, axis=0)
         
-        if len(rw) > 0 and len(remaining_cols) > 0:
-            # Find columns with >(1-error_rate) compatibility
-            logger.debug("[QUASI-BICLIQUE] Calculating column compatibility...")
-            col_compat = np.sum(X_problem[rw][:, remaining_cols] == 1, axis=0) / len(rw)
-            potential_cols = [remaining_cols[i] for i, compat in enumerate(col_compat) if compat >= (1-error_rate)]
-            
-            logger.debug(f"[QUASI-BICLIQUE] Found {len(potential_cols)} potential columns with >(1-error_rate) compatibility")
-            logger.debug(f"[QUASI-BICLIQUE] Column compatibility range: [{np.min(col_compat):.3f}, {np.max(col_compat):.3f}]")
-            
-            if potential_cols:
-                logger.debug(f"[QUASI-BICLIQUE] Starting column extension with {len(potential_cols)} potential columns")
-                # Prepare data for column extension
-                extended_cols = cl + potential_cols
+        all_rows_data = [(int(r), int(all_row_degrees[r])) for r in range(n_rows)]
+        all_cols_data = [(int(c), int(all_col_degrees[c])) for c in range(n_cols)]
+        
+        # Create edges for the entire matrix (positions of 1s)
+        all_edges = []
+        for r in range(n_rows):
+            for c in range(n_cols):
+                if X_problem[r, c] == 1:
+                    all_edges.append((int(r), int(c)))
+        
+        logger.debug(f"[QUASI-BICLIQUE] Full matrix data: {len(all_rows_data)} rows, {len(all_cols_data)} cols, {len(all_edges)} edges")
+        
+        # Use max_e_wr for extension on the entire matrix
+        with suppress_pulp_output():
+            try:
+                logger.debug("[QUASI-BICLIQUE] Calling max_e_wr on entire matrix...")
+                full_model = max_e_wr(
+                    all_rows_data,
+                    all_cols_data,
+                    all_edges,
+                    rw,  # previous rows from seed
+                    cl,  # previous columns from seed
+                    seed_obj,  # previous objective from seed
+                    error_rate
+                )
                 
-                # Calculate degrees for extended data
-                extended_row_degrees = np.sum(X_problem[rw][:, extended_cols] == 1, axis=1)
-                extended_col_degrees = np.sum(X_problem[rw][:, extended_cols] == 1, axis=0)
-                
-                logger.debug(f"[QUASI-BICLIQUE] Extended col degrees range: [{np.min(extended_col_degrees)}, {np.max(extended_col_degrees)}]")
-                
-                # Create data for max_e_wr
-                col_ext_rows_data = [(int(r), int(extended_row_degrees[i])) for i, r in enumerate(rw)]
-                col_ext_cols_data = [(int(c), int(extended_col_degrees[i])) for i, c in enumerate(extended_cols)]
-                
-                # Create edges for column extension
-                col_ext_edges = []
-                for r in rw:
-                    for c in extended_cols:
-                        if X_problem[r, c] == 1:
-                            col_ext_edges.append((int(r), int(c)))
-                
-                logger.debug(f"[QUASI-BICLIQUE] Column extension data: {len(col_ext_edges)} edges")
-                
-                # Use max_e_wr for column extension
-                with suppress_pulp_output():
-                    try:
-                        prev_obj = row_ext_obj if 'row_ext_obj' in locals() else seed_obj
-                        logger.debug(f"[QUASI-BICLIQUE] Using previous objective: {prev_obj}")
-                        
-                        logger.debug("[QUASI-BICLIQUE] Calling max_e_wr for column extension...")
-                        col_ext_model = max_e_wr(
-                            col_ext_rows_data,
-                            col_ext_cols_data,
-                            col_ext_edges,
-                            rw,  # previous rows
-                            cl,  # previous columns
-                            prev_obj,  # previous objective
-                            error_rate
-                        )
-                        
-                        if col_ext_model is None:
-                            logger.error("[QUASI-BICLIQUE] max_e_wr returned None for column extension")
-                        else:
-                            logger.debug("[QUASI-BICLIQUE] Starting column extension optimization...")
-                            col_ext_model.solve(pl.PULP_CBC_CMD(msg=0))
-                            
-                            logger.debug(f"[QUASI-BICLIQUE] Column extension completed with status: {pl.LpStatus[col_ext_model.status]}")
-                            
-                            # Check optimization status
-                            if col_ext_model.status == pl.LpStatusOptimal:
-                                # Extract column extension solution
-                                logger.debug("[QUASI-BICLIQUE] Extracting column extension solution...")
-                                rw = []
-                                cl = []
-                                for var in col_ext_model.variables():
-                                    if var.varValue and var.varValue > 0.5:
-                                        if var.name.startswith("row_"):
-                                            rw.append(int(var.name.split("_")[1]))
-                                        elif var.name.startswith("col_"):
-                                            cl.append(int(var.name.split("_")[1]))
-                                
-                                logger.debug(f"[QUASI-BICLIQUE] Column extension solution: {len(rw)} rows, {len(cl)} columns")
-                                
-                                # Calculate final density after column extension
-                                if rw and cl:
-                                    final_matrix = X_problem[np.ix_(rw, cl)]
-                                    final_density = np.sum(final_matrix == 1) / final_matrix.size
-                                    logger.debug(f"[QUASI-BICLIQUE] Column extension density: {final_density:.4f}")
-                            else:
-                                logger.debug(f"[QUASI-BICLIQUE] Column extension failed with status {pl.LpStatus[col_ext_model.status]}")
+                if full_model is None:
+                    logger.error("[QUASI-BICLIQUE] max_e_wr returned None for full matrix extension")
+                else:
+                    logger.debug("[QUASI-BICLIQUE] Starting full matrix extension optimization...")
+                    full_model.solve(pl.PULP_CBC_CMD(msg=0))
                     
-                    except Exception as e:
-                        logger.error(f"[QUASI-BICLIQUE] Error in column extension: {str(e)}")
-                        # Continue with previous solution
-                        pass
-            else:
-                logger.debug("[QUASI-BICLIQUE] No potential columns found for extension")
-        else:
-            logger.debug("[QUASI-BICLIQUE] Skipping column extension: insufficient data")
-        # PHASE 2: Row extension using max_e_wr
-        logger.debug("[QUASI-BICLIQUE] ========== STARTING PHASE 2: ROW EXTENSION ==========")
-        # Find potential new rows
-        remaining_rows = [r for r in range(n_rows) if r not in rw]
-        logger.debug(f"[QUASI-BICLIQUE] Remaining rows for extension: {len(remaining_rows)}")
-        
-        if len(cl) > 0 and len(remaining_rows) > 0:
-            # Find rows with >(1-error_rate) compatibility
-            logger.debug("[QUASI-BICLIQUE] Calculating row compatibility...")
-            row_compat = np.sum(X_problem[remaining_rows][:, cl] == 1, axis=1) / len(cl)
-            potential_rows = [remaining_rows[i] for i, compat in enumerate(row_compat) if compat >= (1-error_rate)]
-            
-            logger.debug(f"[QUASI-BICLIQUE] Found {len(potential_rows)} potential rows with (1-error_rate) compatibility")
-            logger.debug(f"[QUASI-BICLIQUE] Compatibility range: [{np.min(row_compat):.3f}, {np.max(row_compat):.3f}]")
-            
-            if potential_rows:
-                logger.debug(f"[QUASI-BICLIQUE] Starting row extension with {len(potential_rows)} potential rows")
-                # Prepare data for row extension
-                extended_rows = rw + potential_rows
-                
-                # Calculate degrees for extended data
-                extended_row_degrees = np.sum(X_problem[extended_rows][:, cl] == 1, axis=1)
-                extended_col_degrees = np.sum(X_problem[extended_rows][:, cl] == 1, axis=0)
-                
-                logger.debug(f"[QUASI-BICLIQUE] Extended row degrees range: [{np.min(extended_row_degrees)}, {np.max(extended_row_degrees)}]")
-                
-                # Create data for max_e_wr
-                row_ext_rows_data = [(int(r), int(extended_row_degrees[i])) for i, r in enumerate(extended_rows)]
-                row_ext_cols_data = [(int(c), int(extended_col_degrees[i])) for i, c in enumerate(cl)]
-                
-                # Create edges for row extension
-                row_ext_edges = []
-                for r in extended_rows:
-                    for c in cl:
-                        if X_problem[r, c] == 1:
-                            row_ext_edges.append((int(r), int(c)))
-                
-                logger.debug(f"[QUASI-BICLIQUE] Row extension data: {len(row_ext_edges)} edges")
-                
-                # Use max_e_wr for row extension
-                with suppress_pulp_output():
-                    try:
-                        logger.debug("[QUASI-BICLIQUE] Calling max_e_wr for row extension...")
-                        row_ext_model = max_e_wr(
-                            row_ext_rows_data, 
-                            row_ext_cols_data,
-                            row_ext_edges,
-                            rw,  # previous rows
-                            cl,  # previous columns
-                            seed_obj,  # previous objective
-                            error_rate
-                        )
+                    logger.debug(f"[QUASI-BICLIQUE] Full matrix extension completed with status: {pl.LpStatus[full_model.status]}")
+                    
+                    # Check optimization status
+                    if full_model.status == pl.LpStatusOptimal:
+                        # Extract full matrix extension solution
+                        logger.debug("[QUASI-BICLIQUE] Extracting full matrix extension solution...")
+                        rw = []
+                        cl = []
+                        for var in full_model.variables():
+                            if var.varValue and var.varValue > 0.5:
+                                if var.name.startswith("row_"):
+                                    rw.append(int(var.name.split("_")[1]))
+                                elif var.name.startswith("col_"):
+                                    cl.append(int(var.name.split("_")[1]))
                         
-                        if row_ext_model is None:
-                            logger.error("[QUASI-BICLIQUE] max_e_wr returned None for row extension")
-                        else:
-                            logger.debug("[QUASI-BICLIQUE] Starting row extension optimization...")
-                            row_ext_model.solve(pl.PULP_CBC_CMD(msg=0))
-                            
-                            logger.debug(f"[QUASI-BICLIQUE] Row extension completed with status: {pl.LpStatus[row_ext_model.status]}")
-                            
-                            # Check optimization status
-                            if row_ext_model.status == pl.LpStatusOptimal:
-                                # Extract row extension solution
-                                logger.debug("[QUASI-BICLIQUE] Extracting row extension solution...")
-                                rw = []
-                                cl = []
-                                for var in row_ext_model.variables():
-                                    if var.varValue and var.varValue > 0.5:
-                                        if var.name.startswith("row_"):
-                                            rw.append(int(var.name.split("_")[1]))
-                                        elif var.name.startswith("col_"):
-                                            cl.append(int(var.name.split("_")[1]))
-                                
-                                row_ext_obj = pl.value(row_ext_model.objective)
-                                logger.debug(f"[QUASI-BICLIQUE] Row extension solution: {len(rw)} rows, {len(cl)} columns, obj={row_ext_obj}")
-                                
-                                # Calculate new density after row extension
-                                if rw and cl:
-                                    new_matrix = X_problem[np.ix_(rw, cl)]
-                                    new_density = np.sum(new_matrix == 1) / new_matrix.size
-                                    logger.debug(f"[QUASI-BICLIQUE] Row extension density: {new_density:.4f}")
-                            else:
-                                logger.debug(f"[QUASI-BICLIQUE] Row extension failed with status {pl.LpStatus[row_ext_model.status]}")
+                        full_obj = pl.value(full_model.objective)
+                        logger.debug(f"[QUASI-BICLIQUE] Full matrix extension solution: {len(rw)} rows, {len(cl)} columns, obj={full_obj}")
                         
-                    except Exception as e:
-                        logger.error(f"[QUASI-BICLIQUE] Error in row extension: {str(e)}")
-                        # Continue with seed solution
-                        pass
-            else:
-                logger.debug("[QUASI-BICLIQUE] No potential rows found for extension")
-        else:
-            logger.debug("[QUASI-BICLIQUE] Skipping row extension: insufficient data")
+                        # Calculate final density after full matrix extension
+                        if rw and cl:
+                            final_matrix = X_problem[np.ix_(rw, cl)]
+                            final_density = np.sum(final_matrix == 1) / final_matrix.size
+                            logger.debug(f"[QUASI-BICLIQUE] Full matrix extension density: {final_density:.4f}")
+                    else:
+                        logger.debug(f"[QUASI-BICLIQUE] Full matrix extension failed with status {pl.LpStatus[full_model.status]}")
+                        # Keep seed solution if extension failed
+                
+            except Exception as e:
+                logger.error(f"[QUASI-BICLIQUE] Error in full matrix extension: {str(e)}")
+                # Continue with seed solution if extension failed
+                pass
         
         # Check if we found a valid solution
         logger.debug("[QUASI-BICLIQUE] ========== FINAL SOLUTION VALIDATION ==========")
@@ -853,7 +735,6 @@ def find_quasi_biclique(
     except Exception as e:
         logger.error(f"[QUASI-BICLIQUE] Critical error in quasi-biclique detection: {str(e)}")
         logger.error(f"[QUASI-BICLIQUE] Exception type: {type(e).__name__}")
-        import traceback
         logger.error(f"[QUASI-BICLIQUE] Traceback: {traceback.format_exc()}")
         if log_results:
             log_quasi_biclique_result(input_matrix, [], [], False, phase)

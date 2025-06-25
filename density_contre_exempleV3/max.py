@@ -153,7 +153,7 @@ def max_e_wr(rows_data, cols_data, edges, rows_res, cols_res, prev_obj, delta):
         else:
             print(f"Warning: ({row}, {col}) not found in lpCells!")
 
-    __row_density(rows_data, cols_data, edges, model, lpRows, lpCols, delta)
+    #__row_density(rows_data, cols_data, edges, model, lpRows, lpCols, delta)
     __col_density(rows_data, cols_data, edges, model, lpRows, lpCols, delta)
 
     return model 
