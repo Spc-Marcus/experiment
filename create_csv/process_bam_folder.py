@@ -1,0 +1,339 @@
+import argparse
+import sys
+from pathlib import Path
+import pysam as ps
+import pandas as pd
+import numpy as np
+
+# Ensure we can import from the same directory as this script
+script_dir = Path(__file__).parent.absolute()
+if str(script_dir) not in sys.path:
+    sys.path.insert(0, str(script_dir))
+
+try:
+    from core import get_data
+    from matrix import create_matrix
+except ImportError as e:
+    print(f"Error importing modules: {e}")
+    print(f"Make sure core.py and matrix.py are in: {script_dir}")
+    sys.exit(1)
+
+def process_single_bam(bam_file_path: Path, output_base_dir: Path, 
+                      window_size: int = 100000, overlap: int = 10000,
+                      filtered_col_threshold: float = 0.6, cover_threshold: float = 0.6,
+                      min_rows: int = 20, min_cols: int = 20):
+    """
+    Process a single BAM file and save matrices for all contigs.
+    
+    Parameters
+    ----------
+    bam_file_path : Path
+        Path to the BAM file
+    output_base_dir : Path
+        Base output directory (matrices/)
+    window_size : int
+        Size of genomic windows to process
+    overlap : int
+        Overlap between consecutive windows
+    filtered_col_threshold : float
+        Coverage threshold for columns filtering
+    cover_threshold : float
+        Coverage threshold for read spanning (beginning and end positions only)
+    min_rows : int
+        Minimum number of rows (reads) required for saving matrix
+    min_cols : int
+        Minimum number of columns (positions) required for saving matrix
+    """
+    # Get BAM filename without extension for output folder
+    bam_name = bam_file_path.stem  # removes .bam extension
+    
+    # Create output directory: matrices/X/ where X is BAM name
+    output_dir = output_base_dir / bam_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    print(f"Processing {bam_file_path} -> {output_dir}")
+    print(f"File size: {bam_file_path.stat().st_size / (1024*1024):.1f} MB")
+    
+    total_matrices_saved = 0
+    total_variants = 0
+    
+    try:
+        with ps.AlignmentFile(str(bam_file_path), "rb") as bam_file:
+            # Get all contigs from BAM file
+            contigs = bam_file.references
+            contig_lengths = bam_file.lengths
+            
+            print(f"Found {len(contigs)} contigs in {bam_name}")
+            
+            # Process ALL contigs (removed testing limit)
+            processed_contigs = 0
+            
+            for contig_name, contig_length in zip(contigs, contig_lengths):
+                print(f"  Processing contig {contig_name} (length: {contig_length:,} bp)")
+                
+                # Skip small contigs entirely
+                if contig_length <= 90000:
+                    print(f"    Skipping small contig (≤90,000 bp)")
+                    continue
+                
+                # For large contigs, use 5000 bp windows with no overlap
+                contig_window_size = 5000
+                contig_overlap = 0
+                print(f"    Large contig detected - using {contig_window_size} bp windows")
+                
+                # Process entire contig in 5000 bp windows
+                start_pos = 0
+                window_count = 0
+                # Removed max_windows limit - process entire contig
+                
+                while start_pos < contig_length:
+                    end_pos = min(start_pos + contig_window_size, contig_length)
+                    
+                    print(f"    Processing window {window_count+1}: {start_pos}-{end_pos}")
+                    
+                    try:
+                        # Extract variant data
+                        dict_of_sus_pos, contig_size = get_data(
+                            bam_file, contig_name, start_pos, end_pos
+                        )
+                        
+                        total_variants += len(dict_of_sus_pos)
+                        print(f"      Found {len(dict_of_sus_pos)} variants")
+                        
+                        if dict_of_sus_pos:
+                            # Create and filter matrix
+                            X_matrix, reads = create_matrix(
+                                dict_of_sus_pos,
+                                filtered_col_threshold,
+                                contig_size=contig_size,
+                                contig_name=contig_name,
+                                start_pos=start_pos,
+                                csv_output_dir=output_dir,
+                                cover_threshold=cover_threshold,
+                                min_rows=min_rows,
+                                min_cols=min_cols
+                            )
+                            
+                            # Check if CSV was saved
+                            if (contig_size > 90000 and 
+                                X_matrix.size > 0 and 
+                                X_matrix.shape[0] >= min_rows and 
+                                X_matrix.shape[1] >= min_cols):
+                                total_matrices_saved += 1
+                                print(f"      CSV saved (matrix: {X_matrix.shape})")
+                            else:
+                                print(f"      Matrix: {X_matrix.shape if X_matrix.size > 0 else 'empty'}")
+                        else:
+                            print(f"      No variants found")
+                        
+                        window_count += 1
+                        
+                    except Exception as e:
+                        print(f"      Error processing window {start_pos}-{end_pos}: {e}")
+                    
+                    # Move to next window (5000 bp step)
+                    start_pos += contig_window_size
+                    
+                    # Break if we've reached the end
+                    if start_pos >= contig_length:
+                        break
+                
+                print(f"    Completed {window_count} windows for {contig_name}")
+                processed_contigs += 1
+    
+    except Exception as e:
+        print(f"Error processing {bam_file_path}: {e}")
+        return False
+    
+    print(f"Completed {bam_name}: {total_variants} total variants, {total_matrices_saved} CSV matrices saved")
+    return True
+
+def process_bam_folder(bam_folder: Path, output_folder: Path, 
+                      window_size: int = 100000, overlap: int = 10000,
+                      filtered_col_threshold: float = 0.6, cover_threshold: float = 0.6,
+                      min_rows: int = 20, min_cols: int = 20):
+    """
+    Process all BAM files in a folder.
+    
+    Parameters
+    ----------
+    bam_folder : Path
+        Directory containing BAM files
+    output_folder : Path
+        Output directory (will create matrices_no_binarize/ subdirectory)
+    window_size : int
+        Size of genomic windows to process
+    overlap : int
+        Overlap between consecutive windows
+    filtered_col_threshold : float
+        Coverage threshold for columns filtering
+    cover_threshold : float
+        Coverage threshold for read spanning (beginning and end positions only)
+    min_rows : int
+        Minimum number of rows (reads) required for saving matrix
+    min_cols : int
+        Minimum number of columns (positions) required for saving matrix
+    """
+    # Find all BAM files
+    bam_files = list(bam_folder.glob("*.bam"))
+    
+    if not bam_files:
+        print(f"No BAM files found in {bam_folder}")
+        return
+    
+    print(f"Found {len(bam_files)} BAM files to process")
+    
+    # Create output directory structure
+    matrices_dir = output_folder / f"matrices_no_binarize"
+    matrices_dir.mkdir(parents=True, exist_ok=True)
+    
+    successful = 0
+    failed = 0
+    
+    for bam_file in bam_files:
+        print(f"\n{'='*60}")
+        print(f"Processing BAM file {successful + failed + 1}/{len(bam_files)}: {bam_file.name}")
+        
+        # Check if BAM file is indexed
+        bai_file = Path(str(bam_file) + ".bai")
+        if not bai_file.exists():
+            print(f"Error: Index file {bai_file.name} not found.")
+            print(f"Please create index with: samtools index {bam_file}")
+            failed += 1
+            continue
+        
+        try:
+            success = process_single_bam(
+                bam_file, 
+                matrices_dir, 
+                window_size, 
+                overlap, 
+                filtered_col_threshold,
+                cover_threshold,
+                min_rows,
+                min_cols
+            )
+            
+            if success:
+                successful += 1
+            else:
+                failed += 1
+                
+        except Exception as e:
+            print(f"Failed to process {bam_file.name}: {e}")
+            failed += 1
+    
+    print(f"\n{'='*60}")
+    print(f"Processing complete: {successful} successful, {failed} failed")
+    print(f"Output saved to: {matrices_dir}")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Process all BAM files in a directory and create CSV matrices',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python process_bam_folder.py bam ./output
+  python process_bam_folder.py /path/to/bam_files /path/to/output
+  python process_bam_folder.py /data/bam /results --window-size 50000 --threshold 0.7 --cover 0.8 --rows 30 --cols 25
+        
+Output structure:
+  output_folder/
+  └── matrices_no_binarize/
+      ├── sample1/
+      │   ├── matrix_chr1_0.csv
+      │   ├── matrix_chr1_100000.csv
+      │   └── ...
+      ├── sample2/
+      │   ├── matrix_chr1_0.csv
+      │   └── ...
+      └── sample3/
+          └── ...
+        """
+    )
+    
+    parser.add_argument('bam_folder', type=Path, help='Directory containing BAM files')
+    parser.add_argument('output_folder', type=Path, help='Output directory (will create matrices/ subdirectory)')
+    parser.add_argument('--window-size', type=int, default=5000, 
+                       help='Size of genomic windows (default: 5000)')
+    parser.add_argument('--overlap', type=int, default=10000,
+                       help='Overlap between windows (default: 10000)')
+    parser.add_argument('--threshold', type=float, default=0.6,
+                       help='Minimum read coverage threshold: reads must cover at least this fraction of variant positions (default: 0.6)')
+    parser.add_argument('--cover', type=float, default=0.6,
+                       help='Coverage threshold for read spanning: reads must have data in both beginning and end thirds of positions (default: 0.6)')
+    parser.add_argument('--rows', type=int, default=20,
+                       help='Minimum number of rows (reads) required for saving matrix (default: 20)')
+    parser.add_argument('--cols', type=int, default=20,
+                       help='Minimum number of columns (positions) required for saving matrix (default: 20)')
+    
+    args = parser.parse_args()
+    
+    # Convert to absolute paths
+    bam_folder = args.bam_folder.resolve()
+    output_folder = args.output_folder.resolve()
+    
+    # Validate arguments
+    if not bam_folder.exists():
+        print(f"Error: BAM folder {bam_folder} does not exist")
+        sys.exit(1)
+    
+    if not bam_folder.is_dir():
+        print(f"Error: {bam_folder} is not a directory")
+        sys.exit(1)
+    
+    # Check if we can write to output directory
+    try:
+        output_folder.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        print(f"Error: Permission denied to create/write to {output_folder}")
+        print("Try using a directory in your home folder or current working directory")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error creating output directory {output_folder}: {e}")
+        sys.exit(1)
+    
+    if args.window_size <= 0:
+        print("Error: Window size must be positive")
+        sys.exit(1)
+    
+    if not 0.0 <= args.threshold <= 1.0:
+        print("Error: Threshold must be between 0.0 and 1.0")
+        sys.exit(1)
+    
+    if not 0.0 <= args.cover <= 1.0:
+        print("Error: Cover threshold must be between 0.0 and 1.0")
+        sys.exit(1)
+    
+    if args.rows <= 0:
+        print("Error: Minimum rows must be positive")
+        sys.exit(1)
+    
+    if args.cols <= 0:
+        print("Error: Minimum columns must be positive")
+        sys.exit(1)
+    
+    print(f"Input BAM folder: {bam_folder}")
+    print(f"Output folder: {output_folder}")
+    
+    # Process all BAM files
+    try:
+        process_bam_folder(
+            bam_folder,
+            output_folder, 
+            args.window_size,
+            args.overlap,
+            args.threshold,
+            args.cover,
+            args.rows,
+            args.cols
+        )
+    except KeyboardInterrupt:
+        print("\nProcessing interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
