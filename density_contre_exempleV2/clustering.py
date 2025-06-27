@@ -590,7 +590,7 @@ def find_quasi_biclique(
             model.setParam('OutputFlag', 0)
             model.setParam('LogToConsole', 0)
             model.setParam('MIPGAP', 0.05)
-            model.setParam('TimeLimit', 20)
+            model.setParam('TimeLimit', 2000)
             model.optimize()
         
         # Extract seed solution results
@@ -641,7 +641,7 @@ def find_quasi_biclique(
                 extended_model.setParam('OutputFlag', 0)
                 extended_model.setParam('LogToConsole', 0)
                 extended_model.setParam('MIPGAP', 0.05)
-                extended_model.setParam('TimeLimit', 20)
+                extended_model.setParam('TimeLimit', 2000)
                 extended_model.optimize()
             
             # Extract results after row extension
@@ -691,7 +691,7 @@ def find_quasi_biclique(
                 final_model.setParam('OutputFlag', 0)
                 final_model.setParam('LogToConsole', 0)
                 final_model.setParam('MIPGAP', 0.05)
-                final_model.setParam('TimeLimit', 20)
+                final_model.setParam('TimeLimit', 2000)
                 final_model.optimize()
             
             # Extract final results
