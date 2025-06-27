@@ -30,7 +30,7 @@ This package requires Gurobi with valid licensing. The code includes WLS credent
 ### Basic Matrix Processing
 
 ```bash
-python matrix_processor.py matrix_edge_17_10000.csv --output ../results/clustering_results.json
+python matrix_processor.py ../data/density/matrix_edge_17_10000.csv --output ../results/clustering_results.json
 ```
 
 ### Command Line Options
@@ -49,17 +49,17 @@ Options:
 
 ```bash
 # Basic processing with default parameters
-python matrix_processor.py matrix_edge_17_10000.csv
+python matrix_processor.py ../data/density/matrix_edge_17_10000.csv
 
 # Custom output file and parameters
-python matrix_processor.py matrix_edge_17_10000.csv \
+python matrix_processor.py ../data/density/matrix_edge_17_10000.csv \
   --output ../results/my_results.json \
   --error-rate 0.05 \
   --min-row-quality 3 \
   --min-col-quality 2
 
 # High sensitivity analysis
-python matrix_processor.py matrix_edge_17_10000.csv \
+python matrix_processor.py ../data/density/matrix_edge_17_10000.csv \
   --output ../results/high_sens_results.json \
   --error-rate 0.01 \
   --min-row-quality 3
@@ -163,15 +163,15 @@ Summary of each clustering iteration:
 
 ### Example 1: Processing Dense Matrix
 
-Given the provided matrix `matrix_edge_17_10000.csv`:
+Given the provided matrix `../data/density/matrix_edge_17_10000.csv`:
 
 ```bash
-python matrix_processor.py matrix_edge_17_10000.csv --output dense_analysis.json
+python matrix_processor.py ../data/density/matrix_edge_17_10000.csv --output dense_analysis.json
 ```
 
 **Expected Output:**
 ```
-Loaded matrix from matrix_edge_17_10000.csv
+Loaded matrix from ../data/density/matrix_edge_17_10000.csv
 Shape: (50, 26)
 Density: 0.869
 
@@ -194,7 +194,7 @@ Final results:
 For detecting more subtle patterns:
 
 ```bash
-python matrix_processor.py matrix_edge_17_10000.csv \
+python matrix_processor.py ../data/density/matrix_edge_17_10000.csv \
   --output sensitive_analysis.json \
   --error-rate 0.01 \
   --min-row-quality 3 \
@@ -208,7 +208,7 @@ from matrix_processor import load_csv_matrix, process_matrix_with_logging
 import numpy as np
 
 # Load matrix
-matrix = load_csv_matrix("matrix_edge_17_10000.csv")
+matrix = load_csv_matrix("../data/density/matrix_edge_17_10000.csv")
 
 # Process with custom parameters
 results = process_matrix_with_logging(
