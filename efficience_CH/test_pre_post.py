@@ -30,6 +30,12 @@ def test_pre_post(thresholds, error_rates, strips, haplotypes, nb_matrix_permuta
     csv_file = csv_file or "results.csv"
     print(f"Début des tests avec {len(thresholds)} thresholds, {len(error_rates)} error_rates, {len(strips)} strips, {len(haplotypes)} haplotypes")
     
+    # Debug: Print parameter ranges
+    print(f"Thresholds: {thresholds}")
+    print(f"Error rates: {error_rates}")
+    print(f"Strips: {strips}")
+    print(f"Haplotypes: {haplotypes}")
+    
     open(csv_file, 'w').close()  # Clear the file before writing
     with open(csv_file, 'a') as f:
         f.write("Threshold,Error-Rate,Strip,Haplotype,Matrix-Size,Time-Pre-Processing,Time-Post-Processing,Steps-Count,Unused-Cols,Final-Clusters,Orphan-Reads\n")
@@ -82,16 +88,16 @@ if __name__ == "__main__":
     # Nb de matrice a tester par position
     nb_matrix_permutations = 25
     # Taille des matrices
-    min_rows = 5
-    min_cols = 4
-    max_rows = 10
-    max_cols = 9
+    min_rows = 3
+    min_cols = 3
+    max_rows = 20
+    max_cols = 12
     # Valeurs de seuil et d'erreur pour les tests
-    thresholds = [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.125,0.15,0.175,0.2]
-    error_rates = [0.0,0.005,0.01,0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05,0.06,0.07,0.08,0.09,0.1]
+    thresholds = [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.15,0.2]
+    error_rates = [0.0,0.005,0.01,0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.05,0.06,0.07,0.08,0.09,0.1]
     # Valeur de strip et d'haplotype pour les tests
     strips = [3,4,5,6,7,8,9]
-    haplotypes = [4,5,6,7,8,9,10,11,12]
+    haplotypes = [4,5,6,7,8,9,10]
 
     # Lancer les tests
     test_pre_post(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations, min_rows, min_cols, max_rows, max_cols, csv_file="results.csv")
