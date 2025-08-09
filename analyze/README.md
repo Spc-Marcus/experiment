@@ -6,6 +6,8 @@ This folder contains analysis tools for experimentation results of different imp
 
 - [`KNN.py`](#knn-analysis) - K-Nearest Neighbors imputation analysis
 - [`ILP_call.py`](#ilp-call-analysis) - ILP optimization usage analysis
+- [`Efficience.py`](#efficiency-analysis) - Efficiency heatmap analysis
+- [`efficience_ilp.py`](#ilp-efficiency-analysis) - ILP vs Pre-ILP efficiency analysis
 - `README.md` - This documentation file
 
 ## KNN Analysis
@@ -172,6 +174,172 @@ The CSV file must contain:
 - **Efficiency classification** : Distinguishes between runs requiring ILP optimization vs efficient runs
 - **Scalability patterns** : Identifies matrix characteristics that lead to complex optimization requirements
 - **Sweet spot identification** : Determines optimal matrix ranges for efficient processing
+
+## Efficiency Analysis
+
+### Description
+
+The `Efficience.py` script analyzes clustering efficiency by evaluating how often the number of final clusters matches the number of haplotypes across different certainty thresholds and error rates. It produces a heatmap of success rates per haplotype count.
+
+### Prerequisites
+
+```bash
+pip install pandas matplotlib seaborn numpy
+```
+
+### Usage
+
+#### Syntax
+```bash
+python Efficience.py
+```
+
+Note: This script currently uses a default CSV path defined inside the file. To use a custom CSV or output directory, call the analyzer programmatically (see examples).
+
+#### Options
+- No CLI options. Edit `csv_file` in `main()` or use the programmatic examples below.
+
+#### Examples
+
+**Basic analysis (uses the default CSV path inside the script):**
+```bash
+python Efficience.py
+```
+
+**Programmatic usage with a custom CSV and default output path:**
+```bash
+python -c "from Efficience import EfficiencyAnalyzer; a=EfficiencyAnalyzer('./results.csv'); a.generate_all_plots()"
+```
+
+**Programmatic usage with a custom CSV and custom output directory:**
+```bash
+python -c "from Efficience import EfficiencyAnalyzer; a=EfficiencyAnalyzer('./results.csv'); a.generate_all_plots('./plots')"
+```
+
+### Input Format
+
+The CSV file should contain:
+- `Threshold` : Certainty threshold
+- `Error-Rate` : Error rate used
+- `Strip` : Strip size or related parameter
+- `Haplotype` : Expected number of haplotypes
+- `Steps-Count` : Number of steps
+- `Unused-Cols` : Count of unused columns
+- `Final-Clusters` : Number of clusters produced
+- `Orphan-Reads` : Number of orphan reads
+- `Time-Pre-Processing` : Pre-processing time
+- `Time-Post-Processing` : Post-processing time
+- `Matrix-Size` : Tuple string "(rows, cols)" (unquoted tuples are auto-fixed)
+
+### Output Structure
+
+```
+[output_directory]/                         # Default: /home/mafoin/stage/experiment/analyze/plots
+└── heatmap_certitude_error_by_haplotype.png
+```
+
+### Generated Analyses
+
+1. Success-rate heatmap per haplotype count across Threshold × Error-Rate
+2. Console summary (dataset size, ranges, and unique values)
+
+### Calculated Metrics
+
+- Success rate: `1` if `Final-Clusters == Haplotype`, else `0`; averaged per (Threshold, Error-Rate) grid.
+
+### Key Insights
+
+- Identifies parameter regions (certainty/error rate) yielding perfect clustering.
+- Highlights sensitivity of results to error and certainty settings across haplotype counts.
+
+## ILP Efficiency Analysis
+
+### Description
+
+The `efficience_ilp.py` script compares clustering efficiency before and after ILP. It computes success metrics (clusters match haplotypes), orphan/steps reductions, and generates a comparison plot with optional parameter filters. It also exports per-parameter sweep plots.
+
+### Prerequisites
+
+```bash
+pip install pandas numpy matplotlib
+```
+
+### Usage
+
+#### Syntax
+```bash
+python efficience_ilp.py
+```
+
+Note: This script uses a default CSV path defined inside the file. To use a custom CSV or apply parameter filters, call the analyzer programmatically.
+
+#### Options
+- No CLI options. Edit `csv_file` in `main()` or use programmatic calls.
+
+#### Examples
+
+**Basic analysis (default CSV path):**
+```bash
+python efficience_ilp.py
+```
+
+**Programmatic usage (custom CSV and default outputs):**
+```bash
+python -c "from efficience_ilp import ILPEfficiencyAnalyzer; a=ILPEfficiencyAnalyzer('./results.csv'); a.generate_all_plots()"
+```
+
+**Programmatic usage with filters (saved to a custom path):**
+```bash
+python -c "from efficience_ilp import ILPEfficiencyAnalyzer; a=ILPEfficiencyAnalyzer('./results.csv'); a.plot_success_rate_comparison('./plots/success_filtered.png', threshold=0.9, error_rate=0.02, distance=0.1, show=False)"
+```
+
+### Input Format
+
+The CSV file should contain:
+- `Threshold`
+- `Error-Rate`
+- `Strip`
+- `Haplotype`
+- `Matrix-Size-cols`
+- `Matrix-Size-rows`
+- `Time-Pre-Processing`
+- `Steps-Count-Pre`
+- `Unused-Cols-Pre`
+- `Final-Clusters-Pre`
+- `Orphan-Reads-Pre`
+- `Steps-Count-ILP`
+- `Final-Clusters-ILP`
+- `Orphan-Reads-ILP`
+- `Distance`
+
+### Output Structure
+
+```
+[output_directory]/                      # Default: /home/mafoin/stage/experiment/analyze/plots_ilp
+├── success_rate_comparison.png
+└── success_rate_by_param/
+    ├── threshold/threshold_<val>.png
+    ├── error_rate/error_rate_<val>.png
+    └── distance/distance_<val>.png
+```
+
+### Generated Analyses
+
+1. Success rate comparison (Pre-ILP vs Post-ILP) by haplotype count
+2. Exported sweeps for Threshold, Error-Rate, and Distance
+3. Summary statistics printed to console
+
+### Calculated Metrics
+
+- `Success_Rate_Pre`, `Success_Rate_ILP`
+- `Clusters_Improvement` = `Final-Clusters-ILP - Final-Clusters-Pre`
+- `Orphan_Reduction` and `Orphan_Reduction_Rate`
+- `Steps_Reduction`
+
+### Key Insights
+
+- Quantifies ILP’s contribution to success rate and orphan reduction
+- Highlights sensitivity to Threshold, Error-Rate, and Distance parameters
 
 
 [🔝 Back to top](#experiment-results-analysis)
