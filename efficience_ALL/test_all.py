@@ -94,7 +94,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
 
 if __name__ == "__main__":
     # Nb de matrice a tester par position
-    nb_matrix_permutations = 25
+    nb_matrix_permutations = 10
     # Taille des matrices
     min_rows = 3
     min_cols = 3
@@ -102,11 +102,11 @@ if __name__ == "__main__":
     max_cols = 12
     # Valeurs de seuil et d'erreur pour les tests
     thresholds = [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.15,0.2]
-    error_rates = [0.0,0.005,0.01,0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.05,0.06,0.07,0.08,0.09,0.1]
-    distance_thresh = [0.0, 0.05, 0.1,0.15]
+    error_rates = [0.0,0.005,0.01,0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.05]
+    distance_thresh = [0.0, 0.05, 0.1]
     # Valeur de strip et d'haplotype pour les tests
-    strips = [3,4,5,6,7,8,9]
-    haplotypes = [4,5,6,7,8,9,10]
+    strips = [4,5,6,7,8]
+    haplotypes = [5,6,7,8]
 
     # Lancer les tests
     test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations, min_rows, min_cols, max_rows, max_cols, csv_file="results.csv",distance_thresh=distance_thresh)
