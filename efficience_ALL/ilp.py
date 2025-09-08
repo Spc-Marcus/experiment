@@ -327,5 +327,5 @@ def ilp(input_matrix: np.ndarray, error_rate: float = 0.025) -> Tuple[List[int],
     Tuple[List[int], List[int], bool]
         Row indices, column indices, and success status
     """
-    return find_quasi_dens_matrix_max_ones(input_matrix, error_rate)
+    return find_quasi_biclique_max_e_r_V2(input_matrix, error_rate)
 
