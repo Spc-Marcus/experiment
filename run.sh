@@ -11,7 +11,7 @@ conda activate strainminer
 echo "Test run max e wr (avec warm start)"
 echo "==================================="
 
-if bash python efficience_ALL/test_all.py; then
+if python efficience_ALL/test_all.py; then
     echo "✅ ILP optimization completed successfully!"
 else
     echo "❌ ILP optimization failed"
