@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List, Tuple
-from ilp_grb import find_quasi_dens_matrix_max_ones
+from ilp_grb import find_quasi_biclique_max_e_r_V2
 
 def clustering_full_matrix(input_matrix:np.ndarray, 
         regions :list[int],
