@@ -3,6 +3,7 @@ import numpy as np
 from typing import List, Tuple
 from model.max_one_grb import max_Ones_gurobi
 from model.max_e_r_V2_grb import MaxERModel
+from model.max_e_r_grb import MaxERSolver
 import contextlib
 import sys
 import gurobipy as grb
@@ -238,3 +239,99 @@ def find_quasi_biclique_max_e_r_V2(
     except Exception:
         return [], [], False
 
+def find_quasi_biclique_max_e_r_wr(
+    input_matrix: np.ndarray,
+    error_rate: float = 0.025,
+) -> Tuple[List[int], List[int], bool]:
+    """
+    Find a quasi-biclique in a binary matrix using Gurobi with seed-and-extend strategy.
+    Utilise MaxERSolver (max_e_r, max_e_wr).
+    """
+    X_problem = input_matrix.copy()
+    n_rows, n_cols = X_problem.shape
+    if n_rows == 0 or n_cols == 0:
+        logger.debug("[GRB] Empty matrix provided to quasi-biclique detection")
+        return [], [], False
+    ones_count = np.sum(X_problem == 1)
+    zeros_count = np.sum(X_problem == 0)
+    initial_density = ones_count / X_problem.size
+    logger.debug(f"[GRB] Initial matrix stats: {ones_count} ones, {zeros_count} zeros, density={initial_density:.4f}")
+    
+    try:
+        row_sums = X_problem.sum(axis=1)
+        col_sums = X_problem.sum(axis=0)
+        cols_sorted = np.argsort(col_sums)[::-1]
+        rows_sorted = np.argsort(row_sums)[::-1]
+        seed_cols = max(n_cols // 3, 2)
+        logger.debug(f"[GRB] Seed region size: {seed_cols} columns")
+        seed_row_indices = rows_sorted
+        seed_col_indices = cols_sorted[:seed_cols]
+        seed_matrix = X_problem[np.ix_(seed_row_indices, seed_col_indices)]
+        row_degrees = np.sum(seed_matrix == 1, axis=1)
+        col_degrees = np.sum(seed_matrix == 1, axis=0)
+        seed_density = np.sum(seed_matrix == 1) / seed_matrix.size
+        logger.debug(f"[GRB] Seed matrix density: {seed_density:.4f}")
+        rows_data = [(int(r), int(row_degrees[i])) for i, r in enumerate(seed_row_indices)]
+        cols_data = [(int(c), int(col_degrees[i])) for i, c in enumerate(seed_col_indices)]
+        edges = []
+        for i, r in enumerate(seed_row_indices):
+            for j, c in enumerate(seed_col_indices):
+                if seed_matrix[i, j] == 1:
+                    edges.append((int(r), int(c)))
+        solver = MaxERSolver()
+        seed_model = solver.max_e_r(rows_data, cols_data, edges, error_rate)
+        seed_model.setParam('OutputFlag', 0)
+        seed_model.optimize()
+        rw = []
+        cl = []
+        for v in seed_model.getVars():
+            if v.VarName.startswith('row_') and v.X > 0.5:
+                rw.append(int(v.VarName.split('_')[1]))
+            elif v.VarName.startswith('col_') and v.X > 0.5:
+                cl.append(int(v.VarName.split('_')[1]))
+        if not rw or not cl:
+            logger.debug("[GRB] No solution found in seed phase")
+            return [], [], False
+        seed_solution_matrix = X_problem[np.ix_(rw, cl)]
+        seed_solution_density = np.sum(seed_solution_matrix == 1) / seed_solution_matrix.size
+        logger.debug(f"[GRB] Seed solution density: {seed_solution_density:.4f}")
+        # --- PHASE 2: EXTENSION COLONNES ---
+        row_degrees = np.sum(X_problem[rw, :] == 1, axis=1)
+        rows_data = [(int(r), int(row_degrees[i])) for i, r in enumerate(rw)]
+        col_degrees = np.sum(X_problem[rw, :] == 1, axis=0)
+        cols_data = [(int(c), int(col_degrees[c])) for c in range(n_cols)]
+        edges = []
+        for i, r in enumerate(rw):
+            for c in range(n_cols):
+                if X_problem[r, c] == 1:
+                    edges.append((int(r), int(c)))
+        prev_obj = seed_model.objVal
+        full_model = solver.max_e_wr(
+            rows_data,
+            cols_data,
+            edges,
+            rw,
+            cl,
+            prev_obj,
+            error_rate
+        )
+        full_model.setParam('OutputFlag', 0)
+        full_model.optimize()
+        if full_model.status == 2:  # GRB.OPTIMAL
+            rw = []
+            cl = []
+            for v in full_model.getVars():
+                if v.VarName.startswith('row_') and v.X > 0.5:
+                    rw.append(int(v.VarName.split('_')[1]))
+                elif v.VarName.startswith('col_') and v.X > 0.5:
+                    cl.append(int(v.VarName.split('_')[1]))
+        if rw and cl:
+            selected = X_problem[np.ix_(rw, cl)]
+            density = np.sum(selected == 1) / selected.size
+            logger.debug(f"[GRB] Final quasi-biclique: {len(rw)} rows, {len(cl)} columns, density={density:.4f}")
+            return rw, cl, True
+        logger.debug("[GRB] No valid solution found")
+        return [], [], False
+    except Exception as e:
+        logger.error(f"[GRB] Critical error in quasi-biclique detection: {str(e)}")
+        return [], [], False
