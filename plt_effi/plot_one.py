@@ -2,6 +2,7 @@ import os
 import glob
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 
@@ -188,30 +189,40 @@ for haplotype_count in unique_haplotypes:
     
     plt.figure(figsize=(14, 8))
     
-    boxplot_data = []
+    violin_data = []
+    positions = []
     labels = []
     
-    for er in error_rates:
+    for i, er in enumerate(error_rates):
         data_for_er = haplotype_data[haplotype_data['ErrorRate'] == er]['ClusterDifference']
         if len(data_for_er) > 0:
-            boxplot_data.append(data_for_er)
+            violin_data.append(data_for_er)
+            positions.append(i + 1)
             labels.append(f'{er:.3f}')
     
-    if boxplot_data:
-        plt.boxplot(boxplot_data, labels=labels)
+    if violin_data:
+        # Créer les violin plots
+        parts = plt.violinplot(violin_data, positions=positions, showmeans=True, showmedians=True)
+        
+        # Personnaliser les couleurs
+        for pc in parts['bodies']:
+            pc.set_facecolor('lightblue')
+            pc.set_alpha(0.7)
+        
+        # Ajouter les labels
+        plt.xticks(positions, labels, rotation=45)
         plt.xlabel('Taux d\'erreur')
         plt.ylabel('Différence (Clusters trouvés - Clusters attendus)')
         plt.title(f'Distribution de la différence de clusters par taux d\'erreur\n({int(haplotype_count)} haplotypes{matrix_count_text})')
-        plt.xticks(rotation=45)
         plt.grid(True, alpha=0.3)
         plt.axhline(y=0, color='red', linestyle='--', alpha=0.7, label='Différence nulle')
         plt.legend()
         plt.tight_layout()
         
         # Sauvegarder
-        boxplot_path = os.path.join(by_haplo_dir, f"cluster_difference_{int(haplotype_count)}_haplotypes.png")
-        plt.savefig(boxplot_path, dpi=150)
-        print(f"Boîtes à moustaches pour {int(haplotype_count)} haplotypes sauvegardées: {boxplot_path}")
+        violin_path = os.path.join(by_haplo_dir, f"cluster_difference_{int(haplotype_count)}_haplotypes_violin.png")
+        plt.savefig(violin_path, dpi=150)
+        print(f"Violin plot pour {int(haplotype_count)} haplotypes sauvegardé: {violin_path}")
         plt.close()
 
 # === GRAPHIQUES PAR NOMBRE DE STRIPES ATTENDUES ===
@@ -241,30 +252,40 @@ for stripe_count in unique_expected_stripes:
     
     plt.figure(figsize=(14, 8))
     
-    boxplot_data = []
+    violin_data = []
+    positions = []
     labels = []
     
-    for er in error_rates:
+    for i, er in enumerate(error_rates):
         data_for_er = stripe_data[stripe_data['ErrorRate'] == er]['StripeDifference']
         if len(data_for_er) > 0:
-            boxplot_data.append(data_for_er)
+            violin_data.append(data_for_er)
+            positions.append(i + 1)
             labels.append(f'{er:.3f}')
     
-    if boxplot_data:
-        plt.boxplot(boxplot_data, labels=labels)
+    if violin_data:
+        # Créer les violin plots
+        parts = plt.violinplot(violin_data, positions=positions, showmeans=True, showmedians=True)
+        
+        # Personnaliser les couleurs
+        for pc in parts['bodies']:
+            pc.set_facecolor('lightcoral')
+            pc.set_alpha(0.7)
+        
+        # Ajouter les labels
+        plt.xticks(positions, labels, rotation=45)
         plt.xlabel('Taux d\'erreur')
         plt.ylabel('Différence (Stripes trouvées - Stripes attendues)')
         plt.title(f'Distribution de la différence de stripes par taux d\'erreur\n({int(stripe_count)} stripes attendues{matrix_count_text})')
-        plt.xticks(rotation=45)
         plt.grid(True, alpha=0.3)
         plt.axhline(y=0, color='red', linestyle='--', alpha=0.7, label='Différence nulle')
         plt.legend()
         plt.tight_layout()
         
         # Sauvegarder
-        boxplot_path = os.path.join(by_stripe_dir, f"stripe_difference_{int(stripe_count)}_expected_stripes.png")
-        plt.savefig(boxplot_path, dpi=150)
-        print(f"Boîtes à moustaches pour {int(stripe_count)} stripes attendues sauvegardées: {boxplot_path}")
+        violin_path = os.path.join(by_stripe_dir, f"stripe_difference_{int(stripe_count)}_expected_stripes_violin.png")
+        plt.savefig(violin_path, dpi=150)
+        print(f"Violin plot pour {int(stripe_count)} stripes attendues sauvegardé: {violin_path}")
         plt.close()
 
 # === GRAPHIQUE COMBINÉ PAR HAPLOTYPES ===
@@ -291,28 +312,37 @@ if len(unique_haplotypes) > 0:
         else:
             matrix_count_text = f""
         
-        boxplot_data = []
+        violin_data = []
+        positions = []
         labels = []
         
-        for er in error_rates:
+        for j, er in enumerate(error_rates):
             data_for_er = haplotype_data[haplotype_data['ErrorRate'] == er]['ClusterDifference']
             if len(data_for_er) > 0:
-                boxplot_data.append(data_for_er)
+                violin_data.append(data_for_er)
+                positions.append(j + 1)
                 labels.append(f'{er:.3f}')
         
-        if boxplot_data:
-            axes[i].boxplot(boxplot_data, labels=labels)
+        if violin_data:
+            parts = axes[i].violinplot(violin_data, positions=positions, showmeans=True, showmedians=True)
+            
+            # Personnaliser les couleurs
+            for pc in parts['bodies']:
+                pc.set_facecolor('lightblue')
+                pc.set_alpha(0.7)
+            
+            axes[i].set_xticks(positions)
+            axes[i].set_xticklabels(labels, rotation=45)
             axes[i].set_xlabel('Taux d\'erreur')
             axes[i].set_ylabel('Différence clusters')
             axes[i].set_title(f'{int(haplotype_count)} haplotypes{matrix_count_text}')
-            axes[i].tick_params(axis='x', rotation=45)
             axes[i].grid(True, alpha=0.3)
             axes[i].axhline(y=0, color='red', linestyle='--', alpha=0.7)
 
     plt.tight_layout()
-    combined_haplo_path = os.path.join(by_haplo_dir, "cluster_difference_all_haplotypes.png")
+    combined_haplo_path = os.path.join(by_haplo_dir, "cluster_difference_all_haplotypes_violin.png")
     plt.savefig(combined_haplo_path, dpi=150)
-    print(f"Graphique combiné haplotypes sauvegardé: {combined_haplo_path}")
+    print(f"Graphique combiné haplotypes (violin) sauvegardé: {combined_haplo_path}")
     plt.close()
 
 # === GRAPHIQUE COMBINÉ PAR STRIPES ===
@@ -339,30 +369,39 @@ if len(unique_expected_stripes) > 0:
         else:
             matrix_count_text = f""
         
-        boxplot_data = []
+        violin_data = []
+        positions = []
         labels = []
         
-        for er in error_rates:
+        for j, er in enumerate(error_rates):
             data_for_er = stripe_data[stripe_data['ErrorRate'] == er]['StripeDifference']
             if len(data_for_er) > 0:
-                boxplot_data.append(data_for_er)
+                violin_data.append(data_for_er)
+                positions.append(j + 1)
                 labels.append(f'{er:.3f}')
         
-        if boxplot_data:
-            axes[i].boxplot(boxplot_data, labels=labels)
+        if violin_data:
+            parts = axes[i].violinplot(violin_data, positions=positions, showmeans=True, showmedians=True)
+            
+            # Personnaliser les couleurs
+            for pc in parts['bodies']:
+                pc.set_facecolor('lightcoral')
+                pc.set_alpha(0.7)
+            
+            axes[i].set_xticks(positions)
+            axes[i].set_xticklabels(labels, rotation=45)
             axes[i].set_xlabel('Taux d\'erreur')
             axes[i].set_ylabel('Différence stripes')
             axes[i].set_title(f'{int(stripe_count)} stripes attendues{matrix_count_text}')
-            axes[i].tick_params(axis='x', rotation=45)
             axes[i].grid(True, alpha=0.3)
             axes[i].axhline(y=0, color='red', linestyle='--', alpha=0.7)
 
     plt.tight_layout()
-    combined_stripe_path = os.path.join(by_stripe_dir, "stripe_difference_all_expected_stripes.png")
+    combined_stripe_path = os.path.join(by_stripe_dir, "stripe_difference_all_expected_stripes_violin.png")
     plt.savefig(combined_stripe_path, dpi=150)
-    print(f"Graphique combiné stripes sauvegardé: {combined_stripe_path}")
+    print(f"Graphique combiné stripes (violin) sauvegardé: {combined_stripe_path}")
     plt.close()
 
-print(f"\nTous les graphiques ont été sauvegardés dans:")
+print(f"\nTous les graphiques violin ont été sauvegardés dans:")
 print(f"- Haplotypes: {by_haplo_dir}")
 print(f"- Stripes: {by_stripe_dir}")
