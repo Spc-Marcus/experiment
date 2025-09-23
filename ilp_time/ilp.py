@@ -1,9 +1,10 @@
 import numpy as np
 from typing import List, Tuple
-from ilp_grb import find_quasi_biclique_max_e_r_wr
+from ilp_grb import find_quasi_biclique_max_one_V2, find_quasi_dens_matrix_max_ones
 
 def clustering_full_matrix(input_matrix:np.ndarray, 
         regions :list[int],
+        version:int=1,
         min_row_quality:int=5,
         min_col_quality:int = 3,
         error_rate : float = 0.025) -> tuple[list[tuple[list[int], list[int], list[int]]], dict]:
@@ -89,7 +90,8 @@ def clustering_full_matrix(input_matrix:np.ndarray,
             (reads1, reads0, cols), metricclustering_steps = clustering_step(input_matrix[:, remain_cols], 
                                                           error_rate=error_rate,
                                                           min_row_quality=min_row_quality, 
-                                                          min_col_quality=min_col_quality)
+                                                          min_col_quality=min_col_quality,
+                                                          version=version)
                     
                     # Convert local column indices back to global matrix coordinates
             cols = [remain_cols[c] for c in cols]
@@ -147,6 +149,7 @@ def clustering_full_matrix(input_matrix:np.ndarray,
     return steps_result, metrics
 
 def clustering_step(input_matrix: np.ndarray,
+                    version:int=1,
                     error_rate: float = 0.025,
                     min_row_quality: int = 5,
                     min_col_quality: int = 3,
@@ -244,10 +247,10 @@ def clustering_step(input_matrix: np.ndarray,
         # Apply quasi-biclique detection on appropriate matrix
         if clustering_1:
             # Search for positive patterns (dense regions of 1s)
-            rw, cl, status = ilp(matrix1[remain_rows][:, current_cols], error_rate)
+            rw, cl, status = ilp(matrix1[remain_rows][:, current_cols], error_rate,version)
         else:
             # Search for negative patterns (dense regions of 0s in original)
-            rw, cl, status = ilp(matrix0[remain_rows][:, current_cols], error_rate)
+            rw, cl, status = ilp(matrix0[remain_rows][:, current_cols], error_rate,version)
         nb_ilp_steps += 1
 
         # Convert local indices back to global matrix coordinates
@@ -311,7 +314,7 @@ def clustering_step(input_matrix: np.ndarray,
     }
     return (rw0, rw1, current_cols), metrics
 
-def ilp(input_matrix: np.ndarray, error_rate: float = 0.025) -> Tuple[List[int], List[int], bool]:
+def ilp(input_matrix: np.ndarray, error_rate: float = 0.025, version:int=1) -> Tuple[List[int], List[int], bool]:
     """
     Wrapper function for quasi-biclique detection using integer linear programming.
     
@@ -327,5 +330,8 @@ def ilp(input_matrix: np.ndarray, error_rate: float = 0.025) -> Tuple[List[int],
     Tuple[List[int], List[int], bool]
         Row indices, column indices, and success status
     """
-    return find_quasi_biclique_max_e_r_wr(input_matrix, error_rate)
+    if version == 1:
+        return find_quasi_dens_matrix_max_ones(input_matrix, error_rate)
+    else:
+        return find_quasi_biclique_max_one_V2(input_matrix, error_rate)
 

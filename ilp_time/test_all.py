@@ -4,8 +4,8 @@ import csv
 from typing import Tuple
 import numpy as np
 from create_matrix import create_simple_matrix, extend_matrix, add_noise_to_matrix, mix_matrices
-from model.max_one_grb import max_Ones_gurobi, max_Ones_comp_gurobi
 from post_processing import post_processing
+from ilp import clustering_full_matrix
 try:
     # Prétraitement réutilisé depuis efficience_ALL (utilisé en interne, sans l'exposer dans les colonnes)
     from efficience_ALL.pre_processing import pre_processing
@@ -38,78 +38,37 @@ def matrix(rows, cols, size_cols=None, size_rows=None, error_rate=None, randomiz
     return np.array(matrix)
 
 
-def _build_max_one_inputs(X: np.ndarray) -> Tuple[list[tuple[int, int]], list[tuple[int, int]], list[tuple[int, int]]]:
-    """Prépare rows_data, cols_data, edges (positions à 1) pour les modèles max_one."""
-    m, n = X.shape
-    row_degrees = np.sum(X == 1, axis=1)
-    col_degrees = np.sum(X == 1, axis=0)
-    rows_data = [(int(r), int(row_degrees[r])) for r in range(m)]
-    cols_data = [(int(c), int(col_degrees[c])) for c in range(n)]
-    edges = []
-    # edges = positions de 1 (cf. ilp_grb: edges ajoutés quand X[r,c]==1)
-    ones = np.argwhere(X == 1)
-    for r, c in ones:
-        edges.append((int(r), int(c)))
-    return rows_data, cols_data, edges
-
-
-def run_max_one(X: np.ndarray, error_rate: float, mip_gap: float = 0.05, time_limit: int = 60):
-    """Exécute max_Ones_gurobi sur toute la matrice et retourne temps et sélection."""
-    rows_data, cols_data, edges = _build_max_one_inputs(X)
-    model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate)
-    model.setParam('OutputFlag', 0)
-    model.setParam('MIPGap', mip_gap)
-    model.setParam('TimeLimit', time_limit)
+def run_max_one(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: float,min_rows:int=3, min_cols:int=3):
+    """Exécute le pipline avec max one v2"""
     t0 = time.time()
-    model.optimize()
+    steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=1, min_row_quality=min_rows, min_col_quality=min_cols)
     t1 = time.time()
-    status = model.Status
-    sel_rows, sel_cols = [], []
-    if status in (2, 9):  # OPTIMAL=2, TIME_LIMIT=9
-        for v in model.getVars():
-            if v.VarName.startswith('row_') and v.X > 0.5:
-                sel_rows.append(int(v.VarName.split('_')[1]))
-            elif v.VarName.startswith('col_') and v.X > 0.5:
-                sel_cols.append(int(v.VarName.split('_')[1]))
-    # Calcul métriques
-    ones = int(X[np.ix_(sel_rows, sel_cols)].sum()) if (sel_rows and sel_cols) else 0
     return {
         'time': t1 - t0,
-        'status': status,
-        'rows': sel_rows,
-        'cols': sel_cols,
-        'ones': ones,
-        'obj': getattr(model, 'ObjVal', None),
+        'steps': steps,
+        'data': data
     }
 
 
-def run_max_one_v2(X: np.ndarray, error_rate: float, mip_gap: float = 0.05, time_limit: int = 60):
-    """Exécute la version compactée (v2) via max_Ones_comp_gurobi et retourne temps et sélection."""
-    rows_data, cols_data, edges = _build_max_one_inputs(X)
-    model = max_Ones_comp_gurobi(rows_data, cols_data, edges, error_rate)
-    model.setParam('OutputFlag', 0)
-    model.setParam('MIPGap', mip_gap)
-    model.setParam('TimeLimit', time_limit)
+def run_max_one_v2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: float,min_rows:int=3, min_cols:int=3):
+    """Exécute le pipline avec max one v2"""
     t0 = time.time()
-    model.optimize()
+    steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=2, min_row_quality=min_rows, min_col_quality=min_cols)
     t1 = time.time()
-    status = model.Status
-    sel_rows, sel_cols = [], []
-    if status in (2, 9):  # OPTIMAL=2, TIME_LIMIT=9
-        for v in model.getVars():
-            if v.VarName.startswith('row_') and v.X > 0.5:
-                sel_rows.append(int(v.VarName.split('_')[1]))
-            elif v.VarName.startswith('col_') and v.X > 0.5:
-                sel_cols.append(int(v.VarName.split('_')[1]))
-    ones = int(X[np.ix_(sel_rows, sel_cols)].sum()) if (sel_rows and sel_cols) else 0
     return {
         'time': t1 - t0,
-        'status': status,
-        'rows': sel_rows,
-        'cols': sel_cols,
-        'ones': ones,
-        'obj': getattr(model, 'ObjVal', None),
+        'steps': steps,
+        'data': data
     }
+
+
+def clusters_equivalent(clusters_a: list[np.ndarray], clusters_b: list[np.ndarray]) -> bool:
+    """Compare two clusterings by membership sets (ignoring cluster order)."""
+    if clusters_a is None or clusters_b is None:
+        return False
+    a_sets = {tuple(sorted(c.tolist())) for c in clusters_a}
+    b_sets = {tuple(sorted(c.tolist())) for c in clusters_b}
+    return a_sets == b_sets
 
 
 def load_best_by_error_rate(csv_path: str) -> dict:
@@ -141,15 +100,17 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
     print(f"Début des tests avec {len(error_rates)} error_rates, {len(strips)} strips, {len(haplotypes)} haplotypes")
 
     # En-tête CSV
-    header = (
-        "Error-Rate,Best-Threshold,Best-Distance,Strip,Haplotype,Matrix-Cols,Matrix-Rows,Cols-ILP-Input,"
-        "Time-MaxOne,Rows-MaxOne,Cols-MaxOne,Ones-MaxOne,Status-MaxOne,Obj-MaxOne,Final-Clusters-MaxOne,"
-        "Time-MaxOneV2,Rows-MaxOneV2,Cols-MaxOneV2,Ones-MaxOneV2,Status-MaxOneV2,Obj-MaxOneV2,Final-Clusters-MaxOneV2,"
-        "Equivalent-Final\n"
-    )
+    header_cols = [
+        "Error-Rate","Best-Threshold","Best-Distance","Strip","Haplotype",
+        "Matrix-Rows","Matrix-Cols","Cols-ILP-Input",
+        "Time-ILP-V1","ILP-Steps-V1","Strips-Found-V1","Final-Clusters-V1","Orphans-V1","Unused-Cols-V1",
+        "Time-ILP-V2","ILP-Steps-V2","Strips-Found-V2","Final-Clusters-V2","Orphans-V2","Unused-Cols-V2",
+        "Clusters-Equivalent"
+    ]
     # Écrire l'en-tête une fois
-    with open(csv_file, 'w') as f:
-        f.write(header)
+    with open(csv_file, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header_cols)
 
     # Charger meilleurs paramètres par error-rate depuis Param_best si disponible
     here = os.path.dirname(__file__)
@@ -187,57 +148,38 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         )
                         # Colonnes utilisées pour l'ILP
                         cols_ilp = inhomogeneous_regions if inhomogeneous_regions else list(range(n))
-                        X_ilp = X[:, cols_ilp]
                         cols_ilp_count = len(cols_ilp)
 
                         # max_one (classique) sur les colonnes retenues
-                        res_v1 = run_max_one(X_ilp, error_rate)
-
+                        res_v1 = run_max_one(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         # max_one_v2 (compactée) sur les colonnes retenues
-                        res_v2 = run_max_one_v2(X_ilp, error_rate)
+                        res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
 
-                        # Post-processing: nombre d'haplotypes finaux (clusters) par modèle
-                        def compute_final_clusters_count(sel_rows, sel_cols_local, dist):
-                            try:
-                                # Noms simples pour chaque read
-                                read_names = [f"R{i}" for i in range(m)]
-                                # Construire un step unique à partir de la bicluster ILP (indices colonnes globaux)
-                                sel_rows_list = list(sel_rows) if isinstance(sel_rows, (list, tuple, np.ndarray)) else []
-                                sel_cols_local_list = list(sel_cols_local) if isinstance(sel_cols_local, (list, tuple, np.ndarray)) else []
-                                sel_cols_global = [cols_ilp[c] for c in sel_cols_local_list]
-                                other_rows = [r for r in range(m) if r not in set(sel_rows_list)]
-                                steps = list(steps_pre) + [(sel_rows_list, other_rows, sel_cols_global)]
-                                # Choisir un seuil de distance (par défaut 0.1 si inconnu)
-                                distance = dist if isinstance(dist, (int, float)) and not isinstance(dist, bool) else 0.1
-                                clusters, _, orphan_reads_names, _ = post_processing(
-                                    X, steps, read_names, distance_thresh=float(distance), min_reads_per_cluster=min_rows
-                                )
-                                # Ne compter que les clusters non vides
-                                return len([c for c in clusters if len(c) > 0])
-                            except Exception:
-                                # Fallback simple si le post-traitement échoue
-                                sel_rows_list = list(sel_rows) if isinstance(sel_rows, (list, tuple, np.ndarray)) else []
-                                other_rows = [r for r in range(m) if r not in set(sel_rows_list)]
-                                clusters = []
-                                if len(sel_rows_list) >= (min_rows or 1):
-                                    clusters.append(sel_rows_list)
-                                if len(other_rows) >= (min_rows or 1):
-                                    clusters.append(other_rows)
-                                return len(clusters)
-
-                        final_clusters_v1 = compute_final_clusters_count(res_v1['rows'], res_v1['cols'], best_dist)
-                        final_clusters_v2 = compute_final_clusters_count(res_v2['rows'], res_v2['cols'], best_dist)
-
-                        # Équivalence des résultats finaux (nb d'haplotypes)
-                        equivalent_final = 1 if final_clusters_v1 == final_clusters_v2 else 0
-
-                        line = (
-                            f"{error_rate},{best_thr},{best_dist},{strip},{haplotype},{n},{m},{cols_ilp_count},"
-                            f"{res_v1['time']:.6f},{len(res_v1['rows'])},{len(res_v1['cols'])},{res_v1['ones']},{res_v1['status']},{res_v1['obj'] if res_v1['obj'] is not None else ''},{final_clusters_v1},"
-                            f"{res_v2['time']:.6f},{len(res_v2['rows'])},{len(res_v2['cols'])},{res_v2['ones']},{res_v2['status']},{res_v2['obj'] if res_v2['obj'] is not None else ''},{final_clusters_v2},{equivalent_final}\n"
+                        # Post-processing pour chaque version
+                        read_names = [f"r{i}" for i in range(m)]
+                        dist_used = distance_thresh if distance_thresh is not None else float(best_dist)
+                        steps1 = steps_pre+res_v1['steps']
+                        steps2 = steps_pre+res_v2['steps']
+                        clusters_v1, reduced_v1, orphans_v1, unused_cols_v1 = post_processing(
+                            X, steps1, read_names, distance_thresh=dist_used, min_reads_per_cluster=min_rows
                         )
-                        with open(csv_file, 'a') as f:
-                            f.write(line)
+                        clusters_v2, reduced_v2, orphans_v2, unused_cols_v2 = post_processing(
+                            X, steps2, read_names, distance_thresh=dist_used, min_reads_per_cluster=min_rows
+                        )
+
+                        # Collecter métriques pour CSV
+                        row = [
+                            error_rate, best_thr, best_dist, strip, haplotype,
+                            m, n, cols_ilp_count,
+                            res_v1['time'], res_v1['data'].get('nb_ilp_steps', -1), res_v1['data'].get('nb_strips_from_ilp', -1),
+                            len(clusters_v1), len(orphans_v1), len(unused_cols_v1),
+                            res_v2['time'], res_v2['data'].get('nb_ilp_steps', -1), res_v2['data'].get('nb_strips_from_ilp', -1),
+                            len(clusters_v2), len(orphans_v2), len(unused_cols_v2),
+                            clusters_equivalent(clusters_v1, clusters_v2)
+                        ]
+                        with open(csv_file, 'a', newline='') as f:
+                            writer = csv.writer(f)
+                            writer.writerow(row)
 
                         total_iterations += 1
                         print(f"  Iteration {iteration+1}/{nb_matrix_permutations} completed")
@@ -255,20 +197,22 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
 
 if __name__ == "__main__":
     # Nb de matrices à tester (par combinaison strip/haplotype/error_rate)
-    nb_matrix_permutations = 10
+    nb_matrix_permutations = 100
     # Taille des matrices (paramètres d'extension)
     min_rows = 3
     min_cols = 3
-    max_rows = 20
-    max_cols = 12
+    max_rows = 35
+    max_cols = 25
     # Paramètres d'erreur
     thresholds = []  # ignoré
-    error_rates = [0.03, 0.035, 0.04, 0.05]
+    #error_rates = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025]
     distance_thresh = None  # ignoré
     # Dimensions de base (avant extension)
-    strips = [4, 5, 6, 7, 8]
-    haplotypes = [5, 6, 7, 8, 9, 10]
-
+    #strips = [4, 5, 6, 7]
+    #haplotypes = [5, 7, 9]
+    strips = [ 5]
+    haplotypes = [ 7]
+    error_rates=[0.005]
     # Lancer les tests
     test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations,
              min_rows, min_cols, max_rows, max_cols,
