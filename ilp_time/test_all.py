@@ -205,14 +205,11 @@ if __name__ == "__main__":
     max_cols = 25
     # Paramètres d'erreur
     thresholds = []  # ignoré
-    #error_rates = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025]
+    error_rates = [0.0, 0.01, 0.02,0.03]
     distance_thresh = None  # ignoré
     # Dimensions de base (avant extension)
-    #strips = [4, 5, 6, 7]
-    #haplotypes = [5, 7, 9]
-    strips = [ 5]
-    haplotypes = [ 7]
-    error_rates=[0.005]
+    strips = [4, 5, 6, 7]
+    haplotypes = [5, 7, 9]
     # Lancer les tests
     test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations,
              min_rows, min_cols, max_rows, max_cols,
