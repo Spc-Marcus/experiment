@@ -339,3 +339,64 @@ def find_quasi_biclique_max_one_V2(
         print(sys.exc_info())
         return [], [], False
     
+
+
+def find_quasi_biclique_max_e_r_V2(
+    input_matrix: np.ndarray,
+    error_rate: float = 0.025,
+) -> Tuple[List[int], List[int], bool]:
+    """
+    Find a quasi-biclique using MaxERModel.
+    """
+    X_problem = input_matrix.copy()
+    n_rows, n_cols = X_problem.shape
+    if n_rows == 0 or n_cols == 0:
+        return [], [], False
+
+    try:
+        with suppress_gurobi_output():
+            row_degrees = np.sum(X_problem == 1, axis=1)
+            rows_data = [(r, int(row_degrees[r])) for r in range(n_rows)]
+            col_degrees = np.sum(X_problem == 1, axis=0)
+            cols_data = [(int(c), int(col_degrees[c])) for c in range(n_cols)]
+            edges = []
+            cols_sums = X_problem.sum(axis=0)
+            cols_sorted = np.argsort(cols_sums)[::-1]
+            seed_cols = min(max(n_cols // 3, min(n_cols, 5)), 50)
+            no_use_cols_seed = cols_sorted[seed_cols:]
+
+            for r in range(n_rows):
+                for c in range(n_cols):
+                    if X_problem[r, c] == 1:
+                        edges.append((int(r), int(c)))
+            
+            model = MaxERModel(rows_data, cols_data, edges)
+            model.setParam('OutputFlag', 0)
+            model.build_max_e_r(3, 2)
+            model.add_density_constraints(0)
+            model.add_forced_cols_zero(no_use_cols_seed)
+            model.optimize()
+
+            if model.status == 2:
+                rw = model.get_selected_rows()
+                cl = model.get_selected_cols()
+            else:
+                return [], [], False
+            
+            # PHASE 2: EXTENSION COLONNES
+            no_use_rows_seed = [r for r in range(n_rows) if r not in rw]
+            model.remove_forced_cols_zero(no_use_cols_seed)
+            model.add_forced_rows_zero(no_use_rows_seed)
+            model.add_improvement_constraint(model.ObjVal)
+            model.update_density_constraints(error_rate)
+            model.optimize()
+            
+            if model.status == 2:
+                rw = model.get_selected_rows()
+                cl = model.get_selected_cols()
+            
+            if rw and cl:
+                return rw, cl, True
+            return [], [], False
+    except Exception:
+        return [], [], False

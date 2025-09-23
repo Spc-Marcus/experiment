@@ -60,7 +60,15 @@ def run_max_one_v2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate:
         'steps': steps,
         'data': data
     }
-
+def run_max_e_r_v2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: float,min_rows:int=3, min_cols:int=3): 
+    t0 = time.time()
+    steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=3, min_row_quality=min_rows, min_col_quality=min_cols)
+    t1 = time.time()
+    return {
+        'time': t1 - t0,
+        'steps': steps,
+        'data': data
+    }
 
 def clusters_equivalent(clusters_a: list[np.ndarray], clusters_b: list[np.ndarray]) -> bool:
     """Compare two clusterings by membership sets (ignoring cluster order)."""
@@ -151,14 +159,14 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         cols_ilp_count = len(cols_ilp)
 
                         # max_one (classique) sur les colonnes retenues
-                        res_v1 = run_max_one(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
+                        res_v3 = run_max_e_r_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         # max_one_v2 (compactée) sur les colonnes retenues
                         res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
 
                         # Post-processing pour chaque version
                         read_names = [f"r{i}" for i in range(m)]
                         dist_used = distance_thresh if distance_thresh is not None else float(best_dist)
-                        steps1 = steps_pre+res_v1['steps']
+                        steps1 = steps_pre+res_v3['steps']
                         steps2 = steps_pre+res_v2['steps']
                         clusters_v1, reduced_v1, orphans_v1, unused_cols_v1 = post_processing(
                             X, steps1, read_names, distance_thresh=dist_used, min_reads_per_cluster=min_rows
@@ -171,7 +179,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         row = [
                             error_rate, best_thr, best_dist, strip, haplotype,
                             m, n, cols_ilp_count,
-                            res_v1['time'], res_v1['data'].get('nb_ilp_steps', -1), res_v1['data'].get('nb_strips_from_ilp', -1),
+                            res_v3['time'], res_v3['data'].get('nb_ilp_steps', -1), res_v3['data'].get('nb_strips_from_ilp', -1),
                             len(clusters_v1), len(orphans_v1), len(unused_cols_v1),
                             res_v2['time'], res_v2['data'].get('nb_ilp_steps', -1), res_v2['data'].get('nb_strips_from_ilp', -1),
                             len(clusters_v2), len(orphans_v2), len(unused_cols_v2),
