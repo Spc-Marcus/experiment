@@ -1,22 +1,25 @@
 import numpy as np
 import random
+import csv
+from itertools import permutations
 
 def create_simple_matrix(rows, cols) -> list[list[int]]:
     '''
-    Cree une matrice simple binaire de taille rows x cols
-    tel que les lignes sont uniques et les colonnes sont uniques.
+    Crée une matrice binaire de taille rows x cols
+    telle que toutes les lignes ET toutes les colonnes sont uniques.
+    Méthode rapide : tire aléatoirement des lignes uniques, puis vérifie les colonnes.
     '''
-    max_unique_rows = 2 ** cols
-    if rows > max_unique_rows:
-        raise ValueError(f"Impossible: rows ({rows}) > 2^cols (2^{cols} = {max_unique_rows}). Limite fondamentale dépassée.")
-    
-    matrix = [[0 for _ in range(cols)] for _ in range(rows)]
-    for i in range(rows):
-        # Convertir i en binaire pour créer une ligne unique
-        binary_repr = format(i, f'0{cols}b')
-        for j in range(cols):
-            matrix[i][j] = int(binary_repr[j])
-    return matrix
+    if rows > 2 ** cols or cols > 2 ** rows:
+        raise ValueError("Impossible de garantir unicité des lignes et colonnes avec ces dimensions.")
+
+    all_possible_rows = [list(map(int, format(i, f'0{cols}b'))) for i in range(2 ** cols)]
+    tries = 10000
+    for _ in range(tries):
+        candidate_rows = random.sample(all_possible_rows, rows)
+        columns = list(zip(*candidate_rows))
+        if len({tuple(col) for col in columns}) == cols:
+            return candidate_rows
+    raise ValueError("Impossible de générer une matrice avec lignes et colonnes toutes uniques pour ces dimensions après plusieurs essais.")
 
 def extend_matrix(matrix: list[list[int]], size_cols: list[int], size_rows: list[int]) -> np.ndarray:
     '''
@@ -77,21 +80,43 @@ def mix_matrices(matrix1: np.ndarray) -> np.ndarray:
     
     return shuffled_matrix
 
+def save_matrix_with_labels(matrix, filepath: str):
+    """Sauvegarde une matrice (list[list[int]] ou np.ndarray) dans un CSV
+    avec noms de lignes rX et colonnes cY.
+    Format:
+        ,c0,c1,c2,...
+        r0,0,1,0,...
+        r1,1,0,1,...
+    """
+    if not isinstance(matrix, np.ndarray):
+        matrix = np.array(matrix)
+    if matrix.size == 0:
+        raise ValueError("Matrice vide, rien à sauvegarder.")
+    n_rows, n_cols = matrix.shape
+    header = [''] + [f'c{j}' for j in range(n_cols)]
+    with open(filepath, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for i, row in enumerate(matrix):
+            writer.writerow([f'r{i}'] + list(row))
+    return filepath
+
 if __name__ == "__main__":
     # Exemple d'utilisation
-    rows = 3  # Changé pour respecter la contrainte
-    cols = 3
+    rows = 6  # Changé pour respecter la contrainte
+    cols = 12
     matrix = create_simple_matrix(rows, cols)
     for row in matrix:
         print(row)
     
-    size_cols = [2, 5]  # Exemple de taille de colonnes
-    size_rows = [3, 5]  # Exemple de taille de lignes
+    size_cols = [5, 30]  # Exemple de taille de colonnes
+    size_rows = [5, 30]  # Exemple de taille de lignes
     extended_matrix = extend_matrix(matrix, size_cols, size_rows)
     print("\nMatrice étendue :")
     print(extended_matrix)
+    print("\nTaille de la matrice étendue :", extended_matrix.shape)
     # Ajouter du bruit à la matrice
-    error_rate = 0.01  # 1% de bruit
+    error_rate = 0.025  # 1% de bruit
     noisy_matrix = add_noise_to_matrix(extended_matrix, error_rate)
     print("\nMatrice avec bruit :")
     print(noisy_matrix)
@@ -99,3 +124,10 @@ if __name__ == "__main__":
     mixed_matrix = mix_matrices(noisy_matrix)
     print("\nMatrice mélangée :")
     print(mixed_matrix)
+
+    # Sauvegardes
+    save_matrix_with_labels(matrix, 'matrix_initial.csv')
+    save_matrix_with_labels(extended_matrix, 'matrix_etendue.csv')
+    save_matrix_with_labels(noisy_matrix, 'matrix_bruitee.csv')
+    save_matrix_with_labels(mixed_matrix, 'matrix_melangee.csv')
+    print("\nMatrices sauvegardées dans: matrix_initial.csv, matrix_etendue.csv, matrix_bruitee.csv, matrix_melangee.csv")

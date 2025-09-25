@@ -7,6 +7,8 @@ import contextlib
 import sys
 import gurobipy as grb
 
+from model.max_e_r_V2_grb import MaxERModel
+
 @contextlib.contextmanager
 def suppress_gurobi_output():
     old_stdout = sys.stdout
