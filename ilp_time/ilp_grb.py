@@ -34,6 +34,7 @@ def find_quasi_dens_matrix_max_ones(
     """
     Find a quasi-biclique in a binary matrix using integer linear programming optimization (Gurobi).
     """
+    env = grb.Env(params=options) 
     X_problem = input_matrix.copy()
     cols_sorted = np.argsort(X_problem.sum(axis=0))[::-1]
     rows_sorted = np.argsort(X_problem.sum(axis=1))[::-1]
@@ -73,7 +74,7 @@ def find_quasi_dens_matrix_max_ones(
                     if X_problem[r, c] == 1:
                         edges.append((int(r), int(c)))
             
-            model = max_Ones_gurobi(rows_data, cols_data, edges, 0,options)
+            model = max_Ones_gurobi(rows_data, cols_data, edges, 0,env)
             model.setParam('OutputFlag', 0)
             model.setParam('MIPGap', 0.05)
             model.setParam('TimeLimit', 20)
@@ -119,7 +120,7 @@ def find_quasi_dens_matrix_max_ones(
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
                 
-                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate,options)
+                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate,env)
                 model.setParam('OutputFlag', 0)
                 model.setParam('MIPGap', 0.05)
                 model.setParam('TimeLimit', 180)
@@ -165,7 +166,7 @@ def find_quasi_dens_matrix_max_ones(
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
                 
-                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate,options)
+                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate,env)
                 model.setParam('OutputFlag', 0)
                 model.setParam('MIPGap', 0.05)
                 model.setParam('TimeLimit', 20)
@@ -209,6 +210,7 @@ def find_quasi_biclique_max_one_V2(
     """
     Find a quasi-biclique using MaxOneModel.
     """
+    env = grb.Env(params=options)
     X_problem = input_matrix.copy()
     cols_sorted = np.argsort(X_problem.sum(axis=0))[::-1]
     rows_sorted = np.argsort(X_problem.sum(axis=1))[::-1]
@@ -246,16 +248,7 @@ def find_quasi_biclique_max_one_V2(
                     if X_problem[r, c] == 1:
                         edges.append((int(r), int(c)))
 
-            model = MaxOneModel(rows_data, cols_data, edges, 0.0,options)
-            model.model.setParam('OutputFlag', 0)
-            model.model.setParam('MIPGap', 0.05)
-            model.model.setParam('TimeLimit', 20)
-            # Deterministic and strict tolerances
-            model.model.setParam('Seed', 1)
-            model.model.setParam('IntFeasTol', 1e-9)
-            model.model.setParam('FeasibilityTol', 1e-9)
-            model.model.setParam('OptimalityTol', 1e-9)
-            model.model.setParam('NumericFocus', 1)
+            model = MaxOneModel(rows_data, cols_data, edges, 0.0,env)
             model.add_forced_cols_zero(cols_sorted[seed_cols:])
             model.optimize()
             if model.status != 2:
