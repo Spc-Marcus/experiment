@@ -274,6 +274,7 @@ def find_quasi_biclique_max_one_V2(
                 model.add_forced_cols_zero([c for c in range(n) if c not in all_col_indices])
                 model.add_forced_rows_zero([r for r in range(m) if r not in select_rows])
                 model.set_error_rate(error_rate)
+                model.model.setParam('TimeLimit', 180)
                 model.optimize()
                 if model.status == 2:
                     rw = model.get_selected_rows()
@@ -296,6 +297,7 @@ def find_quasi_biclique_max_one_V2(
                 model.add_forced_rows_zero([r for r in range(m) if r not in all_row_indices])
                 model.add_forced_cols_zero([c for c in range(n) if c not in select_cols])
                 model.set_error_rate(error_rate)
+                model.model.setParam('TimeLimit', 180)
                 model.optimize()
                 if model.status == 2:
                     rw = model.get_selected_rows()
