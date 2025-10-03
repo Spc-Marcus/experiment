@@ -205,7 +205,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
 
 if __name__ == "__main__":
     # Nb de matrices à tester (par combinaison strip/haplotype/error_rate)
-    nb_matrix_permutations = 100
+    nb_matrix_permutations = 10
     # Taille des matrices (paramètres d'extension)
     min_rows = 3
     min_cols = 3

@@ -231,17 +231,14 @@ def find_quasi_biclique_max_one_V2(
     try:
         with suppress_gurobi_output():
             # --- PHASE 1: SEED (identique à V1: lignes triées, seed_col_indices) ---
-            seed_row_indices = rows_sorted
-            seed_col_indices = cols_sorted[:seed_cols]
-
             # Construire modèle uniquement sur seed_rows x seed_cols
-            row_degrees = np.sum(X_problem[seed_row_indices, :][:, seed_col_indices] == 1, axis=1)
-            col_degrees = np.sum(X_problem[seed_row_indices, :][:, seed_col_indices] == 1, axis=0)
-            rows_data = [(int(r), int(row_degrees[i])) for i, r in enumerate(seed_row_indices)]
-            cols_data = [(int(c), int(col_degrees[i])) for i, c in enumerate(seed_col_indices)]
+            row_degrees = np.sum(X_problem[rows_sorted, :][:, cols_sorted] == 1, axis=1)
+            col_degrees = np.sum(X_problem[rows_sorted, :][:, cols_sorted] == 1, axis=0)
+            rows_data = [(int(r), int(row_degrees[i])) for i, r in enumerate(rows_sorted)]
+            cols_data = [(int(c), int(col_degrees[i])) for i, c in enumerate(cols_sorted)]
             edges = []
-            for r in seed_row_indices:
-                for c in seed_col_indices:
+            for r in rows_sorted:
+                for c in cols_sorted:
                     if X_problem[r, c] == 1:
                         edges.append((int(r), int(c)))
 
@@ -255,6 +252,7 @@ def find_quasi_biclique_max_one_V2(
             model.model.setParam('FeasibilityTol', 1e-9)
             model.model.setParam('OptimalityTol', 1e-9)
             model.model.setParam('NumericFocus', 1)
+            model.add_forced_cols_zero(cols_sorted[seed_cols:])
             model.optimize()
             if model.status != 2:
                 return [], [], False
@@ -271,28 +269,13 @@ def find_quasi_biclique_max_one_V2(
 
             if potential_cols:
                 all_col_indices = cl + potential_cols
-                row_degrees = np.sum(X_problem[rw, :][:, all_col_indices] == 1, axis=1)
-                rows_data = [(int(r), int(row_degrees[i])) for i, r in enumerate(rw)]
-                col_degrees = np.sum(X_problem[rw, :][:, all_col_indices] == 1, axis=0)
-                cols_data = [(int(c), int(col_degrees[i])) for i, c in enumerate(all_col_indices)]
-                edges = []
-                for r in rw:
-                    for c in all_col_indices:
-                        if X_problem[r, c] == 1:
-                            edges.append((int(r), int(c)))
-                model2 = MaxOneModel(rows_data, cols_data, edges, error_rate)
-                model2.model.setParam('OutputFlag', 0)
-                model2.model.setParam('MIPGap', 0.05)
-                model2.model.setParam('TimeLimit', 180)
-                # Deterministic and strict tolerances
-                model2.model.setParam('Seed', 1)
-                model2.model.setParam('IntFeasTol', 1e-9)
-                model2.model.setParam('FeasibilityTol', 1e-9)
-                model2.model.setParam('OptimalityTol', 1e-9)
-                model2.model.setParam('NumericFocus', 1)
-                model2.optimize()
-                if model2.status == 2:
-                    model = model2
+                select_rows = rw
+                model.remove_forced_cols_zero(cols_sorted[seed_cols:])
+                model.add_forced_cols_zero([c for c in range(n) if c not in all_col_indices])
+                model.add_forced_rows_zero([r for r in range(m) if r not in select_rows])
+                model.set_error_rate(error_rate)
+                model.optimize()
+                if model.status == 2:
                     rw = model.get_selected_rows()
                     cl = model.get_selected_cols()
                 else:
@@ -305,36 +288,20 @@ def find_quasi_biclique_max_one_V2(
                 potential_rows = [r for idx, r in enumerate(rem_rows) if rem_rows_sum[idx] > 0.5 * len(cl)]
             else:
                 potential_rows = []
-
             if potential_rows:
                 all_row_indices = rw + potential_rows
-                row_degrees = np.sum(X_problem[all_row_indices, :][:, cl] == 1, axis=1)
-                rows_data = [(int(r), int(row_degrees[i])) for i, r in enumerate(all_row_indices)]
-                col_degrees = np.sum(X_problem[all_row_indices, :][:, cl] == 1, axis=0)
-                cols_data = [(int(c), int(col_degrees[i])) for i, c in enumerate(cl)]
-                edges = []
-                for r in all_row_indices:
-                    for c in cl:
-                        if X_problem[r, c] == 1:
-                            edges.append((int(r), int(c)))
-                model3 = MaxOneModel(rows_data, cols_data, edges, error_rate)
-                model3.model.setParam('OutputFlag', 0)
-                model3.model.setParam('MIPGap', 0.05)
-                model3.model.setParam('TimeLimit', 20)
-                # Deterministic and strict tolerances
-                model3.model.setParam('Seed', 1)
-                model3.model.setParam('IntFeasTol', 1e-9)
-                model3.model.setParam('FeasibilityTol', 1e-9)
-                model3.model.setParam('OptimalityTol', 1e-9)
-                model3.model.setParam('NumericFocus', 1)
-                model3.optimize()
-                if model3.status == 2:
-                    model = model3
+                select_cols = cl
+                model.remove_forced_rows_zero([r for r in range(m) if r not in rw])
+                model.remove_forced_cols_zero([c for c in range(n) if c not in cl])
+                model.add_forced_rows_zero([r for r in range(m) if r not in all_row_indices])
+                model.add_forced_cols_zero([c for c in range(n) if c not in select_cols])
+                model.set_error_rate(error_rate)
+                model.optimize()
+                if model.status == 2:
                     rw = model.get_selected_rows()
                     cl = model.get_selected_cols()
                 else:
                     return rw, cl, True
-
             return (rw, cl, True) if (rw and cl) else ([], [], False)
     except Exception:
         print("Exception in Gurobi optimization")

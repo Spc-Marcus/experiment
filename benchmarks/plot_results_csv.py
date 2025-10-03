@@ -39,6 +39,27 @@ def load_results(csv_path: str) -> pd.DataFrame:
     return df
 
 
+def remove_outliers(df: pd.DataFrame, columns: list = None, percentile: float = 1.0) -> pd.DataFrame:
+    """Remove top percentile outliers for specified columns"""
+    if columns is None:
+        columns = ['time_v1', 'time_v2', 'steps_v1', 'steps_v2']
+    
+    df_clean = df.copy()
+    initial_count = len(df_clean)
+    
+    for col in columns:
+        if col in df_clean.columns:
+            # Supprimer seulement les valeurs dans le top percentile%
+            threshold = df_clean[col].quantile(1 - percentile/100)
+            df_clean = df_clean[df_clean[col] <= threshold]
+    
+    removed_count = initial_count - len(df_clean)
+    if removed_count > 0:
+        print(f"Removed {removed_count} outliers ({removed_count/initial_count*100:.1f}% of data, target: {percentile}%)")
+    
+    return df_clean
+
+
 def aggregate(df: pd.DataFrame, agg: str = 'median') -> pd.DataFrame:
     agg_fn = {'mean': 'mean', 'median': 'median'}[agg]
     grouped = (df
@@ -51,7 +72,7 @@ def aggregate(df: pd.DataFrame, agg: str = 'median') -> pd.DataFrame:
     return grouped
 
 
-def plot_times_by_error_rate(df_ag: pd.DataFrame, outdir: str):
+def plot_times_by_error_rate(df_ag: pd.DataFrame, outdir: str, v1_name: str = "V1", v2_name: str = "V2"):
     # One subplot per haplotype
     haplos = sorted(df_ag['haplotype'].unique())
     n = len(haplos)
@@ -61,8 +82,8 @@ def plot_times_by_error_rate(df_ag: pd.DataFrame, outdir: str):
     for i, h in enumerate(haplos):
         ax = axes[i//cols][i%cols]
         sub = df_ag[df_ag['haplotype'] == h].sort_values('error_rate')
-        ax.plot(sub['error_rate'], sub['time_v1'], marker='o', label='V1')
-        ax.plot(sub['error_rate'], sub['time_v2'], marker='s', label='V2')
+        ax.plot(sub['error_rate'], sub['time_v1'], marker='o', label=v1_name)
+        ax.plot(sub['error_rate'], sub['time_v2'], marker='s', label=v2_name)
         # X tick labels with sample size per point
         ax.set_xticks(sub['error_rate'].tolist())
         xticklabels = [f"{er:.3f} (n={int(nv)})" for er, nv in zip(sub['error_rate'], sub.get('n', pd.Series([1]*len(sub))))]
@@ -82,7 +103,7 @@ def plot_times_by_error_rate(df_ag: pd.DataFrame, outdir: str):
     plt.close(fig)
 
 
-def plot_speedup_heatmap(df_ag: pd.DataFrame, outdir: str):
+def plot_speedup_heatmap(df_ag: pd.DataFrame, outdir: str, v1_name: str = "V1", v2_name: str = "V2"):
     # Pivot: rows=error_rate, cols=haplotype
     pivot = df_ag.pivot(index='error_rate', columns='haplotype', values='speedup_v2_over_v1')
     counts = df_ag.pivot(index='error_rate', columns='haplotype', values='n') if 'n' in df_ag.columns else None
@@ -94,9 +115,9 @@ def plot_speedup_heatmap(df_ag: pd.DataFrame, outdir: str):
     ax.set_yticklabels([f"{er:.3f}" for er in pivot.index])
     ax.set_xlabel('Haplotype')
     ax.set_ylabel('Error rate')
-    ax.set_title('Speedup (V2 faster when > 1)')
+    ax.set_title(f'Speedup ({v2_name} faster when > 1)')
     cbar = fig.colorbar(im, ax=ax)
-    cbar.set_label('time_v1 / time_v2')
+    cbar.set_label(f'time_{v1_name} / time_{v2_name}')
     # Annotate values
     for i in range(pivot.shape[0]):
         for j in range(pivot.shape[1]):
@@ -112,7 +133,7 @@ def plot_speedup_heatmap(df_ag: pd.DataFrame, outdir: str):
     plt.close(fig)
 
 
-def plot_v1_vs_v2_scatter(df: pd.DataFrame, outdir: str):
+def plot_v1_vs_v2_scatter(df: pd.DataFrame, outdir: str, v1_name: str = "V1", v2_name: str = "V2"):
     fig, ax = plt.subplots(figsize=(6, 5))
     # Size or color by haplotype
     haplos = sorted(df['haplotype'].unique())
@@ -122,9 +143,9 @@ def plot_v1_vs_v2_scatter(df: pd.DataFrame, outdir: str):
         ax.scatter(sub['time_v1'], sub['time_v2'], alpha=0.6, label=f'h={h} (n={len(sub)})', color=cmap(idx % 10))
     limit = max(df['time_v1'].max(), df['time_v2'].max())
     ax.plot([0, limit], [0, limit], 'k--', linewidth=1, label='y=x')
-    ax.set_xlabel('Time V1 (s)')
-    ax.set_ylabel('Time V2 (s)')
-    ax.set_title('V1 vs V2 runtime')
+    ax.set_xlabel(f'Time {v1_name} (s)')
+    ax.set_ylabel(f'Time {v2_name} (s)')
+    ax.set_title(f'{v1_name} vs {v2_name} runtime')
     ax.grid(True, alpha=0.3)
     ax.legend(ncol=2, fontsize=8)
     fig.tight_layout()
@@ -138,9 +159,17 @@ def main():
     ap.add_argument('--csv', required=True, help='Path to results CSV')
     ap.add_argument('--outdir', default=None, help='Directory to save plots (default: benchmarks/figures/YYYYmmdd_HHMMSS)')
     ap.add_argument('--agg', choices=['mean', 'median'], default='median', help='Aggregation for repeated points')
+    ap.add_argument('--v1-name', default='Max_one_V1', help='Name for V1 data in plots (default: Max_one_V1)')
+    ap.add_argument('--v2-name', default='Max_one_V2', help='Name for V2 data in plots (default: Max_one_V2)')
+    ap.add_argument('--remove-outliers', action='store_true', help='Remove top 1%% outliers')
+    ap.add_argument('--outlier-percentile', type=float, default=1.0, help='Percentage of top outliers to remove (default: 1.0)')
     args = ap.parse_args()
 
     df = load_results(args.csv)
+    
+    # Remove outliers if requested
+    if args.remove_outliers:
+        df = remove_outliers(df, percentile=args.outlier_percentile)
 
     # Prepare output dir
     if args.outdir is None:
@@ -153,9 +182,9 @@ def main():
     # Aggregated plots by (error_rate, haplotype)
     df_ag = aggregate(df, agg=args.agg)
 
-    plot_times_by_error_rate(df_ag, outdir)
-    plot_speedup_heatmap(df_ag, outdir)
-    plot_v1_vs_v2_scatter(df, outdir)
+    plot_times_by_error_rate(df_ag, outdir, args.v1_name, args.v2_name)
+    plot_speedup_heatmap(df_ag, outdir, args.v1_name, args.v2_name)
+    plot_v1_vs_v2_scatter(df, outdir, args.v1_name, args.v2_name)
 
     print(f"Saved plots to {outdir}")
 

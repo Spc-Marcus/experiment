@@ -103,8 +103,8 @@ def save_matrix_with_labels(matrix, filepath: str):
 
 if __name__ == "__main__":
     # Exemple d'utilisation
-    rows = 6  # Changé pour respecter la contrainte
-    cols = 12
+    rows = 12  # Changé pour respecter la contrainte
+    cols = 10
     matrix = create_simple_matrix(rows, cols)
     for row in matrix:
         print(row)
