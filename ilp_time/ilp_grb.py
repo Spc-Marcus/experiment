@@ -5,6 +5,10 @@ from model.max_one_grb import max_Ones_gurobi
 from model.max_one_grb_v2 import MaxOneModel
 import contextlib
 import sys
+# Configuration cloud Gurobi : ces variables d'environnement doivent être définies AVANT l'import de gurobipy
+os.environ['GRB_WLSACCESSID'] = 'af4b8280-70cd-47bc-aeef-69ecf14ecd10'
+os.environ['GRB_WLSSECRET'] = '04da6102-8eb3-4e38-ba06-660ea8f87bf2'
+os.environ['GRB_LICENSEID'] = '2669217'
 import gurobipy as grb
 
 from model.max_e_r_V2_grb import MaxERModel
