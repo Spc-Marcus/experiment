@@ -5,14 +5,14 @@ from model.max_one_grb import max_Ones_gurobi
 from model.max_one_grb_v2 import MaxOneModel
 import contextlib
 import sys
-# Configuration cloud Gurobi : ces variables d'environnement doivent être définies AVANT l'import de gurobipy
-os.environ['GRB_WLSACCESSID'] = 'af4b8280-70cd-47bc-aeef-69ecf14ecd10'
-os.environ['GRB_WLSSECRET'] = '04da6102-8eb3-4e38-ba06-660ea8f87bf2'
-os.environ['GRB_LICENSEID'] = '2669217'
 import gurobipy as grb
 
 from model.max_e_r_V2_grb import MaxERModel
-
+options = {
+	"WLSACCESSID":"4df5800f-53aa-430d-8a39-4d677e2c09d8",
+	"WLSSECRET":"b0083f15-5104-473d-8395-5d93accbc72a",
+	"LICENSEID":2669217,
+}
 @contextlib.contextmanager
 def suppress_gurobi_output():
     old_stdout = sys.stdout
@@ -73,7 +73,7 @@ def find_quasi_dens_matrix_max_ones(
                     if X_problem[r, c] == 1:
                         edges.append((int(r), int(c)))
             
-            model = max_Ones_gurobi(rows_data, cols_data, edges, 0)
+            model = max_Ones_gurobi(rows_data, cols_data, edges, 0,options)
             model.setParam('OutputFlag', 0)
             model.setParam('MIPGap', 0.05)
             model.setParam('TimeLimit', 20)
@@ -119,7 +119,7 @@ def find_quasi_dens_matrix_max_ones(
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
                 
-                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate)
+                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate,options)
                 model.setParam('OutputFlag', 0)
                 model.setParam('MIPGap', 0.05)
                 model.setParam('TimeLimit', 180)
@@ -165,7 +165,7 @@ def find_quasi_dens_matrix_max_ones(
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
                 
-                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate)
+                model = max_Ones_gurobi(rows_data, cols_data, edges, error_rate,options)
                 model.setParam('OutputFlag', 0)
                 model.setParam('MIPGap', 0.05)
                 model.setParam('TimeLimit', 20)
@@ -246,7 +246,7 @@ def find_quasi_biclique_max_one_V2(
                     if X_problem[r, c] == 1:
                         edges.append((int(r), int(c)))
 
-            model = MaxOneModel(rows_data, cols_data, edges, 0.0)
+            model = MaxOneModel(rows_data, cols_data, edges, 0.0,options)
             model.model.setParam('OutputFlag', 0)
             model.model.setParam('MIPGap', 0.05)
             model.model.setParam('TimeLimit', 20)

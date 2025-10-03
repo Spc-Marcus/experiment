@@ -1,7 +1,7 @@
 import gurobipy as gp
 from gurobipy import GRB
 
-def max_Ones_gurobi(rows_data, cols_data, edges, rho):
+def max_Ones_gurobi(rows_data, cols_data, edges, rho,env=None):
     """
     ARGUMENTS:
     ----------
@@ -14,7 +14,10 @@ def max_Ones_gurobi(rows_data, cols_data, edges, rho):
     # ------------------------------------------------------------------------ #
     # Model with maximization
     # ------------------------------------------------------------------------ #
-    model = gp.Model(name='maximize_ones')
+    if env is not None:
+        model = gp.Model(name='maximize_ones',env=env)
+    else:
+        model = gp.Model(name='maximize_ones')
     model.setAttr(GRB.Attr.ModelSense, GRB.MAXIMIZE)
 
     # ------------------------------------------------------------------------ #

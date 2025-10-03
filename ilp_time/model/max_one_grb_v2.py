@@ -3,7 +3,7 @@ from gurobipy import GRB
 
 
 class MaxOneModel:
-    def __init__(self, rows_data, cols_data, edges, error_rate: float):
+    def __init__(self, rows_data, cols_data, edges, error_rate: float,env=None):
         # Store data
         self.rows_data = rows_data
         self.cols_data = cols_data
@@ -11,7 +11,10 @@ class MaxOneModel:
         self.error_rate = float(error_rate)
 
         # Create model
-        self.model = gp.Model("max_one_grb_v2")
+        if env is not None:
+            self.model = gp.Model("max_one_grb_v2",env=env)
+        else:
+            self.model = gp.Model("max_one_grb_v2")
         self.model.setAttr('ModelSense', GRB.MAXIMIZE)
 
         # Variables
