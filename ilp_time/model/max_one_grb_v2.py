@@ -95,7 +95,7 @@ class MaxOneModel:
         self.model.setParam(param, value)
 
     @property
-    def objVal(self):
+    def ObjVal(self):
         return self.model.ObjVal
 
     @property
