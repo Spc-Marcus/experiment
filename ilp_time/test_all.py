@@ -69,7 +69,16 @@ def run_max_e_r_v2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate:
         'steps': steps,
         'data': data
     }
-
+def run_max_one_v1_2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: float,min_rows:int=3, min_cols:int=3):
+    """Exécute le pipline avec max one v1.2"""
+    t0 = time.time()
+    steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=4, min_row_quality=min_rows, min_col_quality=min_cols)
+    t1 = time.time()
+    return {
+        'time': t1 - t0,
+        'steps': steps,
+        'data': data
+    }
 def clusters_equivalent(clusters_a: list[np.ndarray], clusters_b: list[np.ndarray]) -> bool:
     """Compare two clusterings by membership sets (ignoring cluster order)."""
     if clusters_a is None or clusters_b is None:
@@ -161,8 +170,8 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         # max_one (classique) sur les colonnes retenues
                         res_v3 = run_max_e_r_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         # max_one_v2 (compactée) sur les colonnes retenues
-                        res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
-
+                        #res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
+                        res_v2 = run_max_one_v1_2(X, inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols) 
                         # Post-processing pour chaque version
                         read_names = [f"r{i}" for i in range(m)]
                         dist_used = distance_thresh if distance_thresh is not None else float(best_dist)
