@@ -3,6 +3,7 @@ import os
 import csv
 from typing import Tuple
 import numpy as np
+import gurobipy as gp
 from create_matrix import create_simple_matrix, extend_matrix, add_noise_to_matrix, mix_matrices
 from post_processing import post_processing
 from ilp import clustering_full_matrix
@@ -42,6 +43,7 @@ def run_max_one(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: fl
     """Exécute le pipline avec max one v2"""
     t0 = time.time()
     steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=1, min_row_quality=min_rows, min_col_quality=min_cols)
+    gp.disposeDefaultEnv()
     t1 = time.time()
     return {
         'time': t1 - t0,
@@ -54,6 +56,7 @@ def run_max_one_v2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate:
     """Exécute le pipline avec max one v2"""
     t0 = time.time()
     steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=2, min_row_quality=min_rows, min_col_quality=min_cols)
+    gp.disposeDefaultEnv()
     t1 = time.time()
     return {
         'time': t1 - t0,
@@ -63,13 +66,24 @@ def run_max_one_v2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate:
 def run_max_e_r_v2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: float,min_rows:int=3, min_cols:int=3): 
     t0 = time.time()
     steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=3, min_row_quality=min_rows, min_col_quality=min_cols)
+    gp.disposeDefaultEnv()
     t1 = time.time()
     return {
         'time': t1 - t0,
         'steps': steps,
         'data': data
     }
-
+def run_max_one_v1_2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: float,min_rows:int=3, min_cols:int=3):
+    """Exécute le pipline avec max one v1.2"""
+    t0 = time.time()
+    steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=4, min_row_quality=min_rows, min_col_quality=min_cols)
+    gp.disposeDefaultEnv()
+    t1 = time.time()
+    return {
+        'time': t1 - t0,
+        'steps': steps,
+        'data': data
+    }
 def clusters_equivalent(clusters_a: list[np.ndarray], clusters_b: list[np.ndarray]) -> bool:
     """Compare two clusterings by membership sets (ignoring cluster order)."""
     if clusters_a is None or clusters_b is None:
@@ -99,13 +113,14 @@ def load_best_by_error_rate(csv_path: str) -> dict:
     return mapping
 
 def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations,
-             min_rows, min_cols, max_rows, max_cols, csv_file=None, distance_thresh=None):
+             min_rows, min_cols, max_rows, max_cols, csv_file=None, distance_thresh=None, use_preprocessing=False):
     """
-    Compare max_one (classique) vs max_one_v2 (compactée) sans préprocessing.
+    Compare max_one (classique) vs max_one_v2 (compactée) avec ou sans préprocessing.
     Note: paramètres `thresholds` et `distance_thresh` sont ignorés (compatibilité interface).
+    use_preprocessing: bool, si True, applique le préprocessing pour filtrer les colonnes inhomogènes.
     """
     csv_file = csv_file or "results.csv"
-    print(f"Début des tests avec {len(error_rates)} error_rates, {len(strips)} strips, {len(haplotypes)} haplotypes")
+    print(f"Début des tests avec {len(error_rates)} error_rates, {len(strips)} strips, {len(haplotypes)} haplotypes, preprocessing={'activé' if use_preprocessing else 'désactivé'}")
 
     # En-tête CSV
     header_cols = [
@@ -150,10 +165,14 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         if best_dist is None:
                             best_dist = 0.1
 
-                        # Prétraitement (interne)
-                        inhomogeneous_regions, steps_pre = pre_processing(
-                            X, min_col_quality=min_cols, certitude=float(best_thr), error_rate=error_rate
-                        )
+                        # Prétraitement (optionnel)
+                        if use_preprocessing:
+                            inhomogeneous_regions, steps_pre = pre_processing(
+                                X, min_col_quality=min_cols, certitude=float(best_thr), error_rate=error_rate
+                            )
+                        else:
+                            inhomogeneous_regions = list(range(n))
+                            steps_pre = []
                         # Colonnes utilisées pour l'ILP
                         cols_ilp = inhomogeneous_regions if inhomogeneous_regions else list(range(n))
                         cols_ilp_count = len(cols_ilp)
@@ -161,8 +180,8 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         # max_one (classique) sur les colonnes retenues
                         res_v3 = run_max_e_r_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         # max_one_v2 (compactée) sur les colonnes retenues
-                        res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
-
+                        #res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
+                        res_v2 = run_max_one_v1_2(X, inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols) 
                         # Post-processing pour chaque version
                         read_names = [f"r{i}" for i in range(m)]
                         dist_used = distance_thresh if distance_thresh is not None else float(best_dist)
@@ -221,5 +240,5 @@ if __name__ == "__main__":
     # Lancer les tests
     test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations,
              min_rows, min_cols, max_rows, max_cols,
-             csv_file="results.csv", distance_thresh=distance_thresh)
+             csv_file="results.csv", distance_thresh=distance_thresh, use_preprocessing=False)
     print("Tests terminés. Les résultats sont enregistrés dans 'results.csv'.")

@@ -10,7 +10,7 @@ def max_Ones_gurobi(rows_data, cols_data, edges, rho,env=None):
     * edges: list of tuple (row,col) corresponding to the zeros of the matrix.
     * rho: percentage of accepted zeros 
     """
-
+    edges = set(edges)
     # ------------------------------------------------------------------------ #
     # Model with maximization
     # ------------------------------------------------------------------------ #
