@@ -178,7 +178,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         cols_ilp_count = len(cols_ilp)
                         res_v1 = run_max_one(X, inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         # max_one (classique) sur les colonnes retenues
-                        res_v3 = run_max_e_r_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
+                        #res_v3 = run_max_e_r_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         # max_one_v2 (compactée) sur les colonnes retenues
                         #res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         res_v2 = run_max_one_v1_2(X, inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols) 
@@ -198,7 +198,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         row = [
                             error_rate, best_thr, best_dist, strip, haplotype,
                             m, n, cols_ilp_count,
-                            res_v3['time'], res_v3['data'].get('nb_ilp_steps', -1), res_v3['data'].get('nb_strips_from_ilp', -1),
+                            res_v1['time'], res_v1['data'].get('nb_ilp_steps', -1), res_v1['data'].get('nb_strips_from_ilp', -1),
                             len(clusters_v1), len(orphans_v1), len(unused_cols_v1),
                             res_v2['time'], res_v2['data'].get('nb_ilp_steps', -1), res_v2['data'].get('nb_strips_from_ilp', -1),
                             len(clusters_v2), len(orphans_v2), len(unused_cols_v2),
