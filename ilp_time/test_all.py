@@ -235,7 +235,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
 
 if __name__ == "__main__":
     # Nb de matrices à tester (par combinaison strip/haplotype/error_rate)
-    nb_matrix_permutations = 5
+    nb_matrix_permutations = 100
     # Taille des matrices (paramètres d'extension)
     min_rows = 3
     min_cols = 3
@@ -243,11 +243,11 @@ if __name__ == "__main__":
     max_cols = 35
     # Paramètres d'erreur
     thresholds = []  # ignoré
-    error_rates = [0.01]
+    error_rates = [0.01,0.02,0.03]
     distance_thresh = None  # ignoré
     # Dimensions de base (avant extension)
-    strips = [4, 5,]
-    haplotypes = [5, 7, 9]
+    strips = [4, 5,6,7]
+    haplotypes = [5, 7, 9,11]
     # Lancer les tests
     test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations,
              min_rows, min_cols, max_rows, max_cols,
