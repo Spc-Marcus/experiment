@@ -378,6 +378,7 @@ def find_quasi_biclique_max_one_V1_2(
     """
     Find a quasi-biclique using MaxOneModel.
     """
+    env = grb.Env(params=options) 
     X_problem = input_matrix.copy()
     cols_sorted = np.argsort(X_problem.sum(axis=0))[::-1]
     rows_sorted = np.argsort(X_problem.sum(axis=1))[::-1]
@@ -418,7 +419,7 @@ def find_quasi_biclique_max_one_V1_2(
                     if X_problem[r, c] == 1:
                         edges.append((int(r), int(c)))
 
-            model = MaxOneModel(rows_data, cols_data, edges, 0.0)
+            model = MaxOneModel(rows_data, cols_data, edges, 0.0,env)
             model.model.setParam('OutputFlag', 0)
             model.model.setParam('MIPGap', 0.05)
             model.model.setParam('TimeLimit', 20)
@@ -453,7 +454,7 @@ def find_quasi_biclique_max_one_V1_2(
                     for c in all_col_indices:
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
-                model2 = MaxOneModel(rows_data, cols_data, edges, error_rate)
+                model2 = MaxOneModel(rows_data, cols_data, edges, error_rate,env)
                 model2.model.setParam('OutputFlag', 0)
                 model2.model.setParam('MIPGap', 0.05)
                 model2.model.setParam('TimeLimit', 180)
@@ -490,7 +491,7 @@ def find_quasi_biclique_max_one_V1_2(
                     for c in cl:
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
-                model3 = MaxOneModel(rows_data, cols_data, edges, error_rate)
+                model3 = MaxOneModel(rows_data, cols_data, edges, error_rate,env)
                 model3.model.setParam('OutputFlag', 0)
                 model3.model.setParam('MIPGap', 0.05)
                 model3.model.setParam('TimeLimit', 20)
@@ -523,6 +524,7 @@ def find_quasi_biclique_max_one_V3(
     """
     Find a quasi-biclique using MaxOneModel.
     """
+    env = grb.Env(params=options) 
     X_problem = input_matrix.copy()
     cols_sorted = np.argsort(X_problem.sum(axis=0))[::-1]
     rows_sorted = np.argsort(X_problem.sum(axis=1))[::-1]
@@ -563,7 +565,7 @@ def find_quasi_biclique_max_one_V3(
                     if X_problem[r, c] == 1:
                         edges.append((int(r), int(c)))
 
-            model = max_Ones_v3(rows_data, cols_data, edges, 0.0)
+            model = max_Ones_v3(rows_data, cols_data, edges, 0.0,env)
             model.model.setParam('OutputFlag', 0)
             model.model.setParam('MIPGap', 0.05)
             model.model.setParam('TimeLimit', 20)
@@ -598,7 +600,7 @@ def find_quasi_biclique_max_one_V3(
                     for c in all_col_indices:
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
-                model2 = max_Ones_v3(rows_data, cols_data, edges, error_rate)
+                model2 = max_Ones_v3(rows_data, cols_data, edges, error_rate,env)
                 model2.model.setParam('OutputFlag', 0)
                 model2.model.setParam('MIPGap', 0.05)
                 model2.model.setParam('TimeLimit', 180)
@@ -636,7 +638,7 @@ def find_quasi_biclique_max_one_V3(
                     for c in cl:
                         if X_problem[r, c] == 1:
                             edges.append((int(r), int(c)))
-                model3 = max_Ones_v3(rows_data, cols_data, edges, error_rate)
+                model3 = max_Ones_v3(rows_data, cols_data, edges, error_rate,env)
                 model3.model.setParam('OutputFlag', 0)
                 model3.model.setParam('MIPGap', 0.05)
                 model3.model.setParam('TimeLimit', 20)
