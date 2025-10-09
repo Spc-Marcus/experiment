@@ -84,6 +84,17 @@ def run_max_one_v1_2(X: np.ndarray, inhomogeneous_regions: list[ int], error_rat
         'steps': steps,
         'data': data
     }
+def run_max_one_v3(X: np.ndarray, inhomogeneous_regions: list[ int], error_rate: float,min_rows:int=3, min_cols:int=3):
+    """Exécute le pipline avec max one v1.2"""
+    t0 = time.time()
+    steps,data = clustering_full_matrix(X, regions=inhomogeneous_regions, error_rate=error_rate, version=5, min_row_quality=min_rows, min_col_quality=min_cols)
+    gp.disposeDefaultEnv()
+    t1 = time.time()
+    return {
+        'time': t1 - t0,
+        'steps': steps,
+        'data': data
+    }
 def clusters_equivalent(clusters_a: list[np.ndarray], clusters_b: list[np.ndarray]) -> bool:
     """Compare two clusterings by membership sets (ignoring cluster order)."""
     if clusters_a is None or clusters_b is None:
@@ -181,7 +192,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
                         #res_v3 = run_max_e_r_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
                         # max_one_v2 (compactée) sur les colonnes retenues
                         #res_v2 = run_max_one_v2(X,inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols)
-                        res_v2 = run_max_one_v1_2(X, inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols) 
+                        res_v2 = run_max_one_v3(X, inhomogeneous_regions, error_rate, min_rows=min_rows, min_cols=min_cols) 
                         # Post-processing pour chaque version
                         read_names = [f"r{i}" for i in range(m)]
                         dist_used = distance_thresh if distance_thresh is not None else float(best_dist)
@@ -224,7 +235,7 @@ def test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations
 
 if __name__ == "__main__":
     # Nb de matrices à tester (par combinaison strip/haplotype/error_rate)
-    nb_matrix_permutations = 100
+    nb_matrix_permutations = 5
     # Taille des matrices (paramètres d'extension)
     min_rows = 3
     min_cols = 3
@@ -232,10 +243,10 @@ if __name__ == "__main__":
     max_cols = 35
     # Paramètres d'erreur
     thresholds = []  # ignoré
-    error_rates = [0.01, 0.02, 0.03]
+    error_rates = [0.01]
     distance_thresh = None  # ignoré
     # Dimensions de base (avant extension)
-    strips = [4, 5, 6, 7]
+    strips = [4, 5,]
     haplotypes = [5, 7, 9]
     # Lancer les tests
     test_all(thresholds, error_rates, strips, haplotypes, nb_matrix_permutations,
