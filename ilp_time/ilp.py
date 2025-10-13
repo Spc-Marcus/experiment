@@ -339,5 +339,3 @@ def ilp(input_matrix: np.ndarray, error_rate: float = 0.025, version:int=1) -> T
         return find_quasi_biclique_max_one_V1_2(input_matrix,error_rate)
     if version == 5:
         return find_quasi_biclique_max_one_V3(input_matrix, error_rate)
-    if version == 6:
-        return find_quasi_dens_matrix_max_ones_v1_3(input_matrix, error_rate)
