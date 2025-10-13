@@ -4,7 +4,6 @@ from typing import List, Tuple
 from model.max_one_grb import max_Ones_gurobi
 from model.max_one_grb_v2 import MaxOneModel
 from model.max_one_grb_v3 import MaxOneModel as max_Ones_v3
-from model.extend import add_WarmStart
 import contextlib
 import sys
 # Configuration cloud Gurobi : ces variables d'environnement doivent être définies AVANT l'import de gurobipy

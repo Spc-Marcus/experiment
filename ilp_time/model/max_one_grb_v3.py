@@ -50,12 +50,22 @@ class MaxOneModel:
         self._improvement_constr = None
 
     def add_WarmStart(self, rows, cols):
-        for row in rows:
-            if row in self.lp_rows:
-                self.lp_rows[row][0].start = 1
-        for col in cols:
-            if col in self.lp_cols:
-                self.lp_cols[col][0].start = 1
+        # Provide a complete and consistent MIP start for all vars (rows, cols, cells)
+        rows_set = set(rows)
+        cols_set = set(cols)
+
+        # Initialize row/col variable starts to 0 by default, 1 if selected
+        for r, (var_r, _) in self.lp_rows.items():
+            var_r.start = 1 if r in rows_set else 0
+        for c, (var_c, _) in self.lp_cols.items():
+            var_c.start = 1 if c in cols_set else 0
+
+        # Initialize cell variable starts consistent with logical AND of row/col selection
+        # cell_{r,c} = 1 iff row_r = 1 and col_c = 1
+        for (r, c), (var_cell, _) in self.lp_cells.items():
+            var_cell.start = 1 if (r in rows_set and c in cols_set) else 0
+
+        # Push starts into the model
         self.model.update()
 
     
