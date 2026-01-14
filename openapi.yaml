@@ -1,0 +1,467 @@
+openapi: 3.0.3
+info:
+  title: DuoBingo API
+  description: API RESTful pour la plateforme d'apprentissage de langues DuoBingo
+  version: 1.0.0
+  contact:
+    name: Support DuoBingo
+    email: support@duobingo.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.duobingo.com/v1
+    description: Serveur de production
+  - url: https://api-staging.duobingo.com/v1
+    description: Serveur de staging
+  - url: http://localhost:3000/v1
+    description: Serveur de développement local
+
+tags:
+  - name: Authentication
+    description: Endpoints d'authentification
+  - name: Users
+    description: Gestion des utilisateurs
+  - name: Lessons
+    description: Gestion des leçons
+  - name: Exercises
+    description: Gestion des exercices
+  - name: Progress
+    description: Suivi de progression
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authentification utilisateur
+      description: Authentifie un utilisateur et retourne un token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: utilisateur@example.com
+                password:
+                  type: string
+                  format: password
+                  example: motdepasse_securise
+      responses:
+        '200':
+          description: Authentification réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Inscription d'un nouvel utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+              properties:
+                username:
+                  type: string
+                  example: nouveau_utilisateur
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: motdepasse_securise
+      responses:
+        '201':
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Obtenir les informations d'un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "456"
+      responses:
+        '200':
+          description: Informations utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /users/{userId}/progress:
+    get:
+      tags:
+        - Progress
+      summary: Obtenir la progression d'un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "456"
+      responses:
+        '200':
+          description: Progression de l'utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /lessons:
+    get:
+      tags:
+        - Lessons
+      summary: Lister les leçons disponibles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: language
+          in: query
+          schema:
+            type: string
+          example: fr
+          description: Code de langue (ISO 639-1)
+        - name: level
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+          example: 1
+          description: Niveau de difficulté
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Numéro de page
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Nombre d'éléments par page
+      responses:
+        '200':
+          description: Liste des leçons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lesson'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /lessons/{lessonId}:
+    get:
+      tags:
+        - Lessons
+      summary: Obtenir les détails d'une leçon
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: lesson_1
+      responses:
+        '200':
+          description: Détails de la leçon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonDetail'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /exercises/{exerciseId}/submit:
+    post:
+      tags:
+        - Exercises
+      summary: Soumettre une réponse à un exercice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: exerciseId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: ex_1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - answer
+              properties:
+                answer:
+                  type: string
+                  example: Hello
+      responses:
+        '200':
+          description: Réponse évaluée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExerciseResult'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "456"
+        username:
+          type: string
+          example: nouveau_utilisateur
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        level:
+          type: integer
+          example: 5
+        points:
+          type: integer
+          example: 1250
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-14T10:00:00Z"
+
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: string
+          example: lesson_1
+        title:
+          type: string
+          example: Les bases de la conversation
+        language:
+          type: string
+          example: fr
+        level:
+          type: integer
+          example: 1
+        description:
+          type: string
+          example: Apprenez les phrases de base pour commencer une conversation
+
+    LessonDetail:
+      allOf:
+        - $ref: '#/components/schemas/Lesson'
+        - type: object
+          properties:
+            exercises:
+              type: array
+              items:
+                $ref: '#/components/schemas/Exercise'
+
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ex_1
+        type:
+          type: string
+          enum: [translation, multiple_choice, fill_blank, listening]
+          example: translation
+        question:
+          type: string
+          example: Bonjour
+        options:
+          type: array
+          items:
+            type: string
+          description: Options pour les exercices à choix multiples
+
+    ExerciseResult:
+      type: object
+      properties:
+        correct:
+          type: boolean
+          example: true
+        points:
+          type: integer
+          example: 10
+        feedback:
+          type: string
+          example: Excellente réponse !
+        correctAnswer:
+          type: string
+          example: Hello
+
+    Progress:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: "456"
+        totalPoints:
+          type: integer
+          example: 1250
+        level:
+          type: integer
+          example: 5
+        completedLessons:
+          type: integer
+          example: 15
+        streak:
+          type: integer
+          example: 7
+          description: Nombre de jours consécutifs d'apprentissage
+        languages:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                example: fr
+              name:
+                type: string
+                example: Français
+              level:
+                type: integer
+                example: 5
+              points:
+                type: integer
+                example: 1250
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 45
+        pages:
+          type: integer
+          example: 3
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: INVALID_REQUEST
+            message:
+              type: string
+              example: Description de l'erreur
+            details:
+              type: array
+              items:
+                type: string
+
+  responses:
+    UnauthorizedError:
+      description: Authentification requise ou invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFoundError:
+      description: Ressource non trouvée
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
